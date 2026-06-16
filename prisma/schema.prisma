@@ -1,0 +1,1022 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserStatus {
+  ACTIVE               @map("active")
+  PENDING_VERIFICATION @map("pending_verification")
+  LOCKED               @map("locked")
+  DISABLED             @map("disabled")
+  DELETED              @map("deleted")
+
+  @@map("user_status")
+}
+
+enum DashboardPeriodDefault {
+  CURRENT_MONTH @map("current_month")
+  LAST_30_DAYS  @map("last_30_days")
+  CURRENT_YEAR  @map("current_year")
+
+  @@map("dashboard_period_default")
+}
+
+enum AuthSessionStatus {
+  ACTIVE  @map("active")
+  REVOKED @map("revoked")
+  EXPIRED @map("expired")
+  ROTATED @map("rotated")
+
+  @@map("auth_session_status")
+}
+
+enum AccountType {
+  CHECKING   @map("checking")
+  DIGITAL    @map("digital")
+  WALLET     @map("wallet")
+  INVESTMENT @map("investment")
+  CARD       @map("card")
+
+  @@map("account_type")
+}
+
+enum AccountStatus {
+  ACTIVE   @map("active")
+  ARCHIVED @map("archived")
+  DELETED  @map("deleted")
+
+  @@map("account_status")
+}
+
+enum CategoryType {
+  INCOME  @map("income")
+  EXPENSE @map("expense")
+  BOTH    @map("both")
+
+  @@map("category_type")
+}
+
+enum CategoryStatus {
+  ACTIVE   @map("active")
+  ARCHIVED @map("archived")
+  DELETED  @map("deleted")
+
+  @@map("category_status")
+}
+
+enum TransactionType {
+  INCOME       @map("income")
+  EXPENSE      @map("expense")
+  TRANSFER_IN  @map("transfer_in")
+  TRANSFER_OUT @map("transfer_out")
+  ADJUSTMENT   @map("adjustment")
+
+  @@map("transaction_type")
+}
+
+enum TransactionStatus {
+  PENDING   @map("pending")
+  CONFIRMED @map("confirmed")
+  IGNORED   @map("ignored")
+  DELETED   @map("deleted")
+
+  @@map("transaction_status")
+}
+
+enum TransactionSource {
+  MANUAL    @map("manual")
+  CSV       @map("csv")
+  OFX       @map("ofx")
+  RECURRING @map("recurring")
+  SYSTEM    @map("system")
+
+  @@map("transaction_source")
+}
+
+enum TransferStatus {
+  CONFIRMED @map("confirmed")
+  DELETED   @map("deleted")
+
+  @@map("transfer_status")
+}
+
+enum MonthlyBudgetStatus {
+  DRAFT   @map("draft")
+  ACTIVE  @map("active")
+  CLOSED  @map("closed")
+  DELETED @map("deleted")
+
+  @@map("monthly_budget_status")
+}
+
+enum GoalType {
+  GENERIC        @map("generic")
+  EMERGENCY_FUND @map("emergency_fund")
+  TRAVEL         @map("travel")
+  VEHICLE        @map("vehicle")
+  PROPERTY       @map("property")
+  RETIREMENT     @map("retirement")
+  PURCHASE       @map("purchase")
+
+  @@map("goal_type")
+}
+
+enum GoalPriority {
+  LOW    @map("low")
+  MEDIUM @map("medium")
+  HIGH   @map("high")
+
+  @@map("goal_priority")
+}
+
+enum GoalStatus {
+  ACTIVE    @map("active")
+  PAUSED    @map("paused")
+  COMPLETED @map("completed")
+  ARCHIVED  @map("archived")
+  DELETED   @map("deleted")
+
+  @@map("goal_status")
+}
+
+enum GoalContributionType {
+  CONTRIBUTION @map("contribution")
+  WITHDRAWAL   @map("withdrawal")
+  ADJUSTMENT   @map("adjustment")
+
+  @@map("goal_contribution_type")
+}
+
+enum EmergencyFundCalculationMode {
+  MANUAL               @map("manual")
+  AUTO_FROM_CATEGORIES @map("auto_from_categories")
+
+  @@map("emergency_fund_calculation_mode")
+}
+
+enum RecurrenceKind {
+  WEEKLY  @map("weekly")
+  MONTHLY @map("monthly")
+  YEARLY  @map("yearly")
+
+  @@map("recurrence_kind")
+}
+
+enum RecurringTransactionType {
+  INCOME  @map("income")
+  EXPENSE @map("expense")
+
+  @@map("recurring_transaction_type")
+}
+
+enum RecurringTransactionStatus {
+  ACTIVE  @map("active")
+  PAUSED  @map("paused")
+  ENDED   @map("ended")
+  DELETED @map("deleted")
+
+  @@map("recurring_transaction_status")
+}
+
+enum NotificationType {
+  BUDGET_80         @map("budget_80")
+  BUDGET_100        @map("budget_100")
+  GOAL_REACHED      @map("goal_reached")
+  RECURRING_DUE     @map("recurring_due")
+  SCORE_CHANGED     @map("score_changed")
+  INSIGHT_AVAILABLE @map("insight_available")
+  SECURITY          @map("security")
+
+  @@map("notification_type")
+}
+
+enum NotificationSeverity {
+  INFO     @map("info")
+  WARNING  @map("warning")
+  CRITICAL @map("critical")
+  SUCCESS  @map("success")
+
+  @@map("notification_severity")
+}
+
+enum NotificationChannel {
+  IN_APP @map("in_app")
+  EMAIL  @map("email")
+  PUSH   @map("push")
+
+  @@map("notification_channel")
+}
+
+enum NotificationStatus {
+  PENDING   @map("pending")
+  SENT      @map("sent")
+  READ      @map("read")
+  DISMISSED @map("dismissed")
+  FAILED    @map("failed")
+
+  @@map("notification_status")
+}
+
+enum FinancialScoreClassification {
+  CRITICAL  @map("critical")
+  ATTENTION @map("attention")
+  GOOD      @map("good")
+  EXCELLENT @map("excellent")
+
+  @@map("financial_score_classification")
+}
+
+enum FinancialScoreComponentType {
+  SAVINGS_RATE        @map("savings_rate")
+  BUDGET_ADHERENCE    @map("budget_adherence")
+  EMERGENCY_FUND      @map("emergency_fund")
+  GOAL_PROGRESS       @map("goal_progress")
+  NET_WORTH_EVOLUTION @map("net_worth_evolution")
+
+  @@map("financial_score_component_type")
+}
+
+enum FinancialInsightType {
+  SPENDING_INCREASE    @map("spending_increase")
+  BUDGET_RISK          @map("budget_risk")
+  SUBSCRIPTION_SAVING  @map("subscription_saving")
+  GOAL_PROJECTION      @map("goal_projection")
+  CASHFLOW_SUMMARY     @map("cashflow_summary")
+  SCORE_RECOMMENDATION @map("score_recommendation")
+
+  @@map("financial_insight_type")
+}
+
+enum FinancialInsightSource {
+  RULE_ENGINE @map("rule_engine")
+  AI_SERVICE  @map("ai_service")
+  HYBRID      @map("hybrid")
+
+  @@map("financial_insight_source")
+}
+
+enum FinancialInsightSeverity {
+  INFO        @map("info")
+  OPPORTUNITY @map("opportunity")
+  WARNING     @map("warning")
+  CRITICAL    @map("critical")
+
+  @@map("financial_insight_severity")
+}
+
+enum FinancialInsightStatus {
+  NEW       @map("new")
+  SEEN      @map("seen")
+  DISMISSED @map("dismissed")
+  ARCHIVED  @map("archived")
+
+  @@map("financial_insight_status")
+}
+
+enum InsightGenerationTrigger {
+  MANUAL              @map("manual")
+  SCHEDULED           @map("scheduled")
+  TRANSACTION_CREATED @map("transaction_created")
+  MONTH_CLOSED        @map("month_closed")
+  SCORE_UPDATED       @map("score_updated")
+
+  @@map("insight_generation_trigger")
+}
+
+enum RunStatus {
+  QUEUED    @map("queued")
+  RUNNING   @map("running")
+  COMPLETED @map("completed")
+  FAILED    @map("failed")
+  CANCELLED @map("cancelled")
+
+  @@map("run_status")
+}
+
+enum ImportSourceType {
+  CSV @map("csv")
+  OFX @map("ofx")
+
+  @@map("import_source_type")
+}
+
+enum ImportBatchStatus {
+  UPLOADED        @map("uploaded")
+  PARSED          @map("parsed")
+  REVIEW_REQUIRED @map("review_required")
+  IMPORTED        @map("imported")
+  FAILED          @map("failed")
+  CANCELLED       @map("cancelled")
+
+  @@map("import_batch_status")
+}
+
+enum ImportItemInferredType {
+  INCOME  @map("income")
+  EXPENSE @map("expense")
+  UNKNOWN @map("unknown")
+
+  @@map("import_item_inferred_type")
+}
+
+enum ImportItemStatus {
+  PENDING_REVIEW @map("pending_review")
+  READY          @map("ready")
+  IMPORTED       @map("imported")
+  DUPLICATE      @map("duplicate")
+  IGNORED        @map("ignored")
+  FAILED         @map("failed")
+
+  @@map("import_item_status")
+}
+
+enum AuditEventType {
+  LOGIN_SUCCESS             @map("login_success")
+  LOGIN_FAILED              @map("login_failed")
+  LOGOUT                    @map("logout")
+  PASSWORD_RESET_REQUESTED  @map("password_reset_requested")
+  PASSWORD_CHANGED          @map("password_changed")
+  ENTITY_CREATED            @map("entity_created")
+  ENTITY_UPDATED            @map("entity_updated")
+  ENTITY_DELETED            @map("entity_deleted")
+  IMPORT_COMPLETED          @map("import_completed")
+  SCORE_CALCULATED          @map("score_calculated")
+  INSIGHT_GENERATED         @map("insight_generated")
+  SECURITY_EVENT            @map("security_event")
+
+  @@map("audit_event_type")
+}
+
+enum RiskLevel {
+  LOW      @map("low")
+  MEDIUM   @map("medium")
+  HIGH     @map("high")
+  CRITICAL @map("critical")
+
+  @@map("risk_level")
+}
+
+enum CategorySummaryType {
+  INCOME  @map("income")
+  EXPENSE @map("expense")
+
+  @@map("category_summary_type")
+}
+
+model User {
+  id                  String     @id @default(uuid()) @db.Uuid
+  name                String     @db.VarChar(120)
+  email               String     @db.VarChar(254)
+  emailNormalized     String     @unique @map("email_normalized") @db.VarChar(254)
+  passwordHash        String     @map("password_hash") @db.VarChar(255)
+  status              UserStatus @default(PENDING_VERIFICATION)
+  emailVerifiedAt     DateTime?  @map("email_verified_at") @db.Timestamptz(6)
+  lastLoginAt         DateTime?  @map("last_login_at") @db.Timestamptz(6)
+  failedLoginAttempts Int        @default(0) @map("failed_login_attempts")
+  lockedUntil         DateTime?  @map("locked_until") @db.Timestamptz(6)
+  createdAt           DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt           DateTime   @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt           DateTime?  @map("deleted_at") @db.Timestamptz(6)
+
+  preference                UserPreference?
+  authSessions              AuthSession[]
+  passwordResetTokens       PasswordResetToken[]
+  accounts                  Account[]
+  categories                Category[]
+  transactions              Transaction[]
+  transfers                 Transfer[]
+  monthlyBudgets            MonthlyBudget[]
+  budgetCategoryLimits      BudgetCategoryLimit[]
+  goals                     Goal[]
+  goalContributions         GoalContribution[]
+  emergencyFundPlans        EmergencyFundPlan[]
+  recurringTransactions     RecurringTransaction[]
+  notifications             Notification[]
+  financialScores           FinancialScore[]
+  financialScoreComponents  FinancialScoreComponent[]
+  financialInsights         FinancialInsight[]
+  insightGenerationRuns     InsightGenerationRun[]
+  importBatches             ImportBatch[]
+  importItems               ImportItem[]
+  auditLogs                 AuditLog[]                @relation("AuditLogUser")
+  auditLogsAsActor          AuditLog[]                @relation("AuditLogActor")
+  accountBalanceSnapshots   AccountBalanceSnapshot[]
+  monthlyFinancialSummaries MonthlyFinancialSummary[]
+  monthlyCategorySummaries  MonthlyCategorySummary[]
+
+  @@index([status])
+  @@index([deletedAt])
+  @@map("users")
+}
+
+model UserPreference {
+  id                          String                 @id @default(uuid()) @db.Uuid
+  userId                      String                 @unique @map("user_id") @db.Uuid
+  currency                    String                 @default("BRL") @db.Char(3)
+  locale                      String                 @default("pt-BR") @db.VarChar(10)
+  timezone                    String                 @default("America/Sao_Paulo") @db.VarChar(64)
+  monthStartDay               Int                    @default(1) @map("month_start_day")
+  dashboardPeriodDefault      DashboardPeriodDefault @default(CURRENT_MONTH) @map("dashboard_period_default")
+  aiInsightsEnabled           Boolean                @default(true) @map("ai_insights_enabled")
+  emailNotificationsEnabled   Boolean                @default(true) @map("email_notifications_enabled")
+  inAppNotificationsEnabled   Boolean                @default(true) @map("in_app_notifications_enabled")
+  createdAt                   DateTime               @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt                   DateTime               @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@map("user_preferences")
+}
+
+model AuthSession {
+  id               String            @id @default(uuid()) @db.Uuid
+  userId           String            @map("user_id") @db.Uuid
+  refreshTokenHash String            @map("refresh_token_hash") @db.VarChar(255)
+  deviceId         String?           @map("device_id") @db.VarChar(120)
+  userAgent        String?           @map("user_agent") @db.VarChar(512)
+  ipAddress        String?           @map("ip_address") @db.VarChar(45)
+  status           AuthSessionStatus @default(ACTIVE)
+  expiresAt        DateTime          @map("expires_at") @db.Timestamptz(6)
+  revokedAt        DateTime?         @map("revoked_at") @db.Timestamptz(6)
+  revokedReason    String?           @map("revoked_reason") @db.VarChar(120)
+  createdAt        DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime          @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@index([userId, status])
+  @@index([refreshTokenHash])
+  @@index([expiresAt])
+  @@map("auth_sessions")
+}
+
+model PasswordResetToken {
+  id          String    @id @default(uuid()) @db.Uuid
+  userId      String    @map("user_id") @db.Uuid
+  tokenHash   String    @map("token_hash") @db.VarChar(255)
+  expiresAt   DateTime  @map("expires_at") @db.Timestamptz(6)
+  usedAt      DateTime? @map("used_at") @db.Timestamptz(6)
+  requestedIp String?   @map("requested_ip") @db.VarChar(45)
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@index([tokenHash])
+  @@index([userId, createdAt])
+  @@index([expiresAt])
+  @@map("password_reset_tokens")
+}
+
+model Account {
+  id                 String        @id @default(uuid()) @db.Uuid
+  userId             String        @map("user_id") @db.Uuid
+  name               String        @db.VarChar(120)
+  type               AccountType
+  currency           String        @default("BRL") @db.Char(3)
+  initialBalance     Decimal       @default(0) @map("initial_balance") @db.Decimal(19, 4)
+  currentBalance     Decimal       @default(0) @map("current_balance") @db.Decimal(19, 4)
+  includeInDashboard Boolean       @default(true) @map("include_in_dashboard")
+  color              String?       @db.VarChar(20)
+  icon               String?       @db.VarChar(60)
+  status             AccountStatus @default(ACTIVE)
+  createdAt          DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime      @updatedAt @map("updated_at") @db.Timestamptz(6)
+  archivedAt         DateTime?     @map("archived_at") @db.Timestamptz(6)
+  deletedAt          DateTime?     @map("deleted_at") @db.Timestamptz(6)
+
+  user                    User                     @relation(fields: [userId], references: [id], onDelete: Restrict)
+  transactions            Transaction[]
+  outgoingTransfers       Transfer[]               @relation("TransferFromAccount")
+  incomingTransfers       Transfer[]               @relation("TransferToAccount")
+  recurringTransactions   RecurringTransaction[]
+  importBatches           ImportBatch[]
+  importItems             ImportItem[]
+  accountBalanceSnapshots AccountBalanceSnapshot[]
+
+  @@index([userId, status])
+  @@index([userId, type])
+  @@index([deletedAt])
+  @@map("accounts")
+}
+
+model Category {
+  id          String         @id @default(uuid()) @db.Uuid
+  userId      String?        @map("user_id") @db.Uuid
+  name        String         @db.VarChar(80)
+  type        CategoryType
+  parentId    String?        @map("parent_id") @db.Uuid
+  isDefault   Boolean        @default(false) @map("is_default")
+  isEssential Boolean        @default(false) @map("is_essential")
+  color       String?        @db.VarChar(20)
+  icon        String?        @db.VarChar(60)
+  sortOrder   Int            @default(0) @map("sort_order")
+  status      CategoryStatus @default(ACTIVE)
+  createdAt   DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime       @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt   DateTime?      @map("deleted_at") @db.Timestamptz(6)
+
+  user                     User?                    @relation(fields: [userId], references: [id], onDelete: Restrict)
+  parent                   Category?                @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
+  children                 Category[]               @relation("CategoryHierarchy")
+  transactions             Transaction[]
+  budgetCategoryLimits     BudgetCategoryLimit[]
+  recurringTransactions    RecurringTransaction[]
+  importItems              ImportItem[]
+  monthlyCategorySummaries MonthlyCategorySummary[]
+
+  @@unique([userId, type, name])
+  @@index([userId, status])
+  @@index([parentId])
+  @@index([isDefault])
+  @@index([deletedAt])
+  @@map("categories")
+}
+
+model Transaction {
+  id                     String            @id @default(uuid()) @db.Uuid
+  userId                 String            @map("user_id") @db.Uuid
+  accountId              String            @map("account_id") @db.Uuid
+  categoryId             String?           @map("category_id") @db.Uuid
+  type                   TransactionType
+  status                 TransactionStatus @default(CONFIRMED)
+  description            String            @db.VarChar(180)
+  amount                 Decimal           @db.Decimal(19, 4)
+  transactionDate        DateTime          @map("transaction_date") @db.Date
+  postedAt               DateTime?         @map("posted_at") @db.Timestamptz(6)
+  source                 TransactionSource @default(MANUAL)
+  merchantName           String?           @map("merchant_name") @db.VarChar(160)
+  notes                  String?           @db.Text
+  importItemId           String?           @unique @map("import_item_id") @db.Uuid
+  recurringTransactionId String?           @map("recurring_transaction_id") @db.Uuid
+  transferId             String?           @map("transfer_id") @db.Uuid
+  externalReference      String?           @map("external_reference") @db.VarChar(180)
+  fingerprint            String?           @db.VarChar(128)
+  metadata               Json?
+  createdAt              DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt              DateTime          @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt              DateTime?         @map("deleted_at") @db.Timestamptz(6)
+
+  user                 User                  @relation(fields: [userId], references: [id], onDelete: Restrict)
+  account              Account               @relation(fields: [accountId], references: [id], onDelete: Restrict)
+  category             Category?             @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  importItem           ImportItem?           @relation("ImportedTransaction", fields: [importItemId], references: [id], onDelete: Restrict)
+  matchedImportItems   ImportItem[]          @relation("MatchedImportItem")
+  recurringTransaction RecurringTransaction?  @relation(fields: [recurringTransactionId], references: [id], onDelete: Restrict)
+  transfer             Transfer?             @relation(fields: [transferId], references: [id], onDelete: Restrict)
+  goalContributions    GoalContribution[]
+
+  @@index([userId, transactionDate])
+  @@index([userId, type, transactionDate])
+  @@index([userId, accountId, transactionDate])
+  @@index([userId, categoryId, transactionDate])
+  @@index([userId, status, transactionDate])
+  @@index([fingerprint])
+  @@index([transferId])
+  @@index([recurringTransactionId])
+  @@index([deletedAt])
+  @@map("transactions")
+}
+
+model Transfer {
+  id            String         @id @default(uuid()) @db.Uuid
+  userId        String         @map("user_id") @db.Uuid
+  fromAccountId String         @map("from_account_id") @db.Uuid
+  toAccountId   String         @map("to_account_id") @db.Uuid
+  amount        Decimal        @db.Decimal(19, 4)
+  transferDate  DateTime       @map("transfer_date") @db.Date
+  description   String?        @db.VarChar(180)
+  status        TransferStatus @default(CONFIRMED)
+  createdAt     DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime       @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt     DateTime?      @map("deleted_at") @db.Timestamptz(6)
+
+  user          User          @relation(fields: [userId], references: [id], onDelete: Restrict)
+  fromAccount   Account       @relation("TransferFromAccount", fields: [fromAccountId], references: [id], onDelete: Restrict)
+  toAccount     Account       @relation("TransferToAccount", fields: [toAccountId], references: [id], onDelete: Restrict)
+  transactions  Transaction[]
+
+  @@index([userId, transferDate])
+  @@index([fromAccountId])
+  @@index([toAccountId])
+  @@index([deletedAt])
+  @@map("transfers")
+}
+
+model MonthlyBudget {
+  id             String              @id @default(uuid()) @db.Uuid
+  userId         String              @map("user_id") @db.Uuid
+  month          DateTime            @db.Date
+  totalLimit     Decimal?            @map("total_limit") @db.Decimal(19, 4)
+  currency       String              @default("BRL") @db.Char(3)
+  status         MonthlyBudgetStatus @default(DRAFT)
+  createdAt      DateTime            @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime            @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt      DateTime?           @map("deleted_at") @db.Timestamptz(6)
+
+  user                   User                  @relation(fields: [userId], references: [id], onDelete: Restrict)
+  budgetCategoryLimits   BudgetCategoryLimit[]
+
+  @@unique([userId, month])
+  @@index([userId, month, status])
+  @@index([deletedAt])
+  @@map("monthly_budgets")
+}
+
+model BudgetCategoryLimit {
+  id             String    @id @default(uuid()) @db.Uuid
+  budgetId       String    @map("budget_id") @db.Uuid
+  userId         String    @map("user_id") @db.Uuid
+  categoryId     String    @map("category_id") @db.Uuid
+  limitAmount    Decimal   @map("limit_amount") @db.Decimal(19, 4)
+  alert80SentAt  DateTime? @map("alert_80_sent_at") @db.Timestamptz(6)
+  alert100SentAt DateTime? @map("alert_100_sent_at") @db.Timestamptz(6)
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  budget   MonthlyBudget @relation(fields: [budgetId], references: [id], onDelete: Restrict)
+  user     User          @relation(fields: [userId], references: [id], onDelete: Restrict)
+  category Category      @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+
+  @@unique([budgetId, categoryId])
+  @@index([userId, categoryId])
+  @@map("budget_category_limits")
+}
+
+model Goal {
+  id            String       @id @default(uuid()) @db.Uuid
+  userId        String       @map("user_id") @db.Uuid
+  name          String       @db.VarChar(120)
+  type          GoalType     @default(GENERIC)
+  targetAmount  Decimal      @map("target_amount") @db.Decimal(19, 4)
+  currentAmount Decimal      @default(0) @map("current_amount") @db.Decimal(19, 4)
+  targetDate    DateTime?    @map("target_date") @db.Date
+  currency      String       @default("BRL") @db.Char(3)
+  priority      GoalPriority @default(MEDIUM)
+  status        GoalStatus   @default(ACTIVE)
+  completedAt   DateTime?    @map("completed_at") @db.Timestamptz(6)
+  createdAt     DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime     @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt     DateTime?    @map("deleted_at") @db.Timestamptz(6)
+
+  user              User               @relation(fields: [userId], references: [id], onDelete: Restrict)
+  contributions     GoalContribution[]
+  emergencyFundPlan EmergencyFundPlan?
+
+  @@index([userId, status])
+  @@index([userId, type])
+  @@index([deletedAt])
+  @@map("goals")
+}
+
+model GoalContribution {
+  id               String               @id @default(uuid()) @db.Uuid
+  userId           String               @map("user_id") @db.Uuid
+  goalId           String               @map("goal_id") @db.Uuid
+  transactionId    String?              @map("transaction_id") @db.Uuid
+  type             GoalContributionType
+  amount           Decimal              @db.Decimal(19, 4)
+  contributionDate DateTime             @map("contribution_date") @db.Date
+  notes            String?              @db.Text
+  createdAt        DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime             @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt        DateTime?            @map("deleted_at") @db.Timestamptz(6)
+
+  user        User         @relation(fields: [userId], references: [id], onDelete: Restrict)
+  goal        Goal         @relation(fields: [goalId], references: [id], onDelete: Restrict)
+  transaction Transaction? @relation(fields: [transactionId], references: [id], onDelete: Restrict)
+
+  @@index([userId, goalId, contributionDate])
+  @@index([transactionId])
+  @@index([deletedAt])
+  @@map("goal_contributions")
+}
+
+model EmergencyFundPlan {
+  id                      String                       @id @default(uuid()) @db.Uuid
+  userId                  String                       @map("user_id") @db.Uuid
+  goalId                  String                       @unique @map("goal_id") @db.Uuid
+  desiredMonths           Int                          @map("desired_months")
+  essentialMonthlyExpense Decimal?                     @map("essential_monthly_expense") @db.Decimal(19, 4)
+  calculationMode         EmergencyFundCalculationMode @default(MANUAL) @map("calculation_mode")
+  lastCalculatedAt        DateTime?                    @map("last_calculated_at") @db.Timestamptz(6)
+  createdAt               DateTime                     @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt               DateTime                     @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+  goal Goal @relation(fields: [goalId], references: [id], onDelete: Restrict)
+
+  @@index([userId])
+  @@map("emergency_fund_plans")
+}
+
+model RecurringTransaction {
+  id                 String                     @id @default(uuid()) @db.Uuid
+  userId             String                     @map("user_id") @db.Uuid
+  accountId          String                     @map("account_id") @db.Uuid
+  categoryId         String?                    @map("category_id") @db.Uuid
+  type               RecurringTransactionType
+  recurrenceKind     RecurrenceKind             @map("recurrence_kind")
+  name               String                     @db.VarChar(120)
+  description        String?                    @db.VarChar(180)
+  amount             Decimal                    @db.Decimal(19, 4)
+  currency           String                     @default("BRL") @db.Char(3)
+  startDate          DateTime                   @map("start_date") @db.Date
+  endDate            DateTime?                  @map("end_date") @db.Date
+  nextOccurrenceDate DateTime                   @map("next_occurrence_date") @db.Date
+  lastGeneratedAt    DateTime?                  @map("last_generated_at") @db.Timestamptz(6)
+  isSubscription     Boolean                    @default(false) @map("is_subscription")
+  providerName       String?                    @map("provider_name") @db.VarChar(120)
+  status             RecurringTransactionStatus @default(ACTIVE)
+  createdAt          DateTime                   @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime                   @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt          DateTime?                  @map("deleted_at") @db.Timestamptz(6)
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Restrict)
+  account      Account       @relation(fields: [accountId], references: [id], onDelete: Restrict)
+  category     Category?     @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  transactions Transaction[]
+
+  @@index([userId, status])
+  @@index([userId, nextOccurrenceDate])
+  @@index([accountId])
+  @@index([categoryId])
+  @@index([deletedAt])
+  @@map("recurring_transactions")
+}
+
+model Notification {
+  id                String               @id @default(uuid()) @db.Uuid
+  userId            String               @map("user_id") @db.Uuid
+  type              NotificationType
+  severity          NotificationSeverity @default(INFO)
+  title             String               @db.VarChar(140)
+  message           String               @db.Text
+  relatedEntityType String?              @map("related_entity_type") @db.VarChar(80)
+  relatedEntityId   String?              @map("related_entity_id") @db.Uuid
+  channel           NotificationChannel  @default(IN_APP)
+  status            NotificationStatus   @default(PENDING)
+  scheduledFor      DateTime?            @map("scheduled_for") @db.Timestamptz(6)
+  sentAt            DateTime?            @map("sent_at") @db.Timestamptz(6)
+  readAt            DateTime?            @map("read_at") @db.Timestamptz(6)
+  createdAt         DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime             @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@index([userId, status, createdAt])
+  @@index([userId, type])
+  @@index([scheduledFor])
+  @@map("notifications")
+}
+
+model FinancialScore {
+  id                  String                       @id @default(uuid()) @db.Uuid
+  userId              String                       @map("user_id") @db.Uuid
+  periodStart         DateTime                     @map("period_start") @db.Date
+  periodEnd           DateTime                     @map("period_end") @db.Date
+  score               Int
+  classification      FinancialScoreClassification
+  savingsRate         Decimal?                     @map("savings_rate") @db.Decimal(9, 4)
+  expenseRatio        Decimal?                     @map("expense_ratio") @db.Decimal(9, 4)
+  emergencyFundMonths Decimal?                     @map("emergency_fund_months") @db.Decimal(9, 4)
+  budgetAdherenceRate Decimal?                     @map("budget_adherence_rate") @db.Decimal(9, 4)
+  goalProgressRate    Decimal?                     @map("goal_progress_rate") @db.Decimal(9, 4)
+  netWorthDelta       Decimal?                     @map("net_worth_delta") @db.Decimal(19, 4)
+  recommendations     Json?
+  calculationVersion  String                       @map("calculation_version") @db.VarChar(40)
+  calculatedAt        DateTime                     @map("calculated_at") @db.Timestamptz(6)
+  createdAt           DateTime                     @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  user       User                      @relation(fields: [userId], references: [id], onDelete: Restrict)
+  components FinancialScoreComponent[]
+
+  @@unique([userId, periodStart, periodEnd, calculationVersion])
+  @@index([userId, calculatedAt])
+  @@index([userId, periodStart, periodEnd])
+  @@map("financial_scores")
+}
+
+model FinancialScoreComponent {
+  id               String                      @id @default(uuid()) @db.Uuid
+  financialScoreId String                      @map("financial_score_id") @db.Uuid
+  userId           String                      @map("user_id") @db.Uuid
+  component        FinancialScoreComponentType
+  rawValue         Decimal?                    @map("raw_value") @db.Decimal(19, 4)
+  normalizedScore  Int                         @map("normalized_score")
+  weight           Decimal                     @db.Decimal(9, 4)
+  explanation      String?                     @db.Text
+  createdAt        DateTime                    @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  financialScore FinancialScore @relation(fields: [financialScoreId], references: [id], onDelete: Restrict)
+  user           User           @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@unique([financialScoreId, component])
+  @@index([userId])
+  @@map("financial_score_components")
+}
+
+model FinancialInsight {
+  id               String                   @id @default(uuid()) @db.Uuid
+  userId           String                   @map("user_id") @db.Uuid
+  type             FinancialInsightType
+  source           FinancialInsightSource
+  periodStart      DateTime                 @map("period_start") @db.Date
+  periodEnd        DateTime                 @map("period_end") @db.Date
+  title            String                   @db.VarChar(160)
+  body             String                   @db.Text
+  severity         FinancialInsightSeverity @default(INFO)
+  confidence       Decimal?                 @db.Decimal(5, 4)
+  dataPoints       Json?                    @map("data_points")
+  actionLabel      String?                  @map("action_label") @db.VarChar(80)
+  status           FinancialInsightStatus   @default(NEW)
+  generatedByRunId String?                  @map("generated_by_run_id") @db.Uuid
+  createdAt        DateTime                 @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime                 @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user           User                  @relation(fields: [userId], references: [id], onDelete: Restrict)
+  generatedByRun InsightGenerationRun? @relation(fields: [generatedByRunId], references: [id], onDelete: Restrict)
+
+  @@index([userId, status, createdAt])
+  @@index([userId, type, periodStart, periodEnd])
+  @@index([generatedByRunId])
+  @@map("financial_insights")
+}
+
+model InsightGenerationRun {
+  id               String                   @id @default(uuid()) @db.Uuid
+  userId           String                   @map("user_id") @db.Uuid
+  trigger          InsightGenerationTrigger
+  periodStart      DateTime                 @map("period_start") @db.Date
+  periodEnd        DateTime                 @map("period_end") @db.Date
+  status           RunStatus                @default(QUEUED)
+  inputSummary     Json?                    @map("input_summary")
+  modelProvider    String?                  @map("model_provider") @db.VarChar(80)
+  modelName        String?                  @map("model_name") @db.VarChar(120)
+  promptVersion    String?                  @map("prompt_version") @db.VarChar(40)
+  tokenInputCount  Int?                     @map("token_input_count")
+  tokenOutputCount Int?                     @map("token_output_count")
+  errorCode        String?                  @map("error_code") @db.VarChar(80)
+  errorMessage     String?                  @map("error_message") @db.Text
+  startedAt        DateTime?                @map("started_at") @db.Timestamptz(6)
+  finishedAt       DateTime?                @map("finished_at") @db.Timestamptz(6)
+  createdAt        DateTime                 @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  user              User               @relation(fields: [userId], references: [id], onDelete: Restrict)
+  financialInsights FinancialInsight[]
+
+  @@index([userId, status, createdAt])
+  @@index([userId, periodStart, periodEnd])
+  @@map("insight_generation_runs")
+}
+
+model ImportBatch {
+  id               String            @id @default(uuid()) @db.Uuid
+  userId           String            @map("user_id") @db.Uuid
+  accountId        String            @map("account_id") @db.Uuid
+  sourceType       ImportSourceType  @map("source_type")
+  originalFileName String            @map("original_file_name") @db.VarChar(255)
+  fileHash         String            @map("file_hash") @db.VarChar(128)
+  fileSizeBytes    Int               @map("file_size_bytes")
+  status           ImportBatchStatus @default(UPLOADED)
+  totalRows        Int?              @map("total_rows")
+  parsedRows       Int?              @map("parsed_rows")
+  importedRows     Int?              @map("imported_rows")
+  duplicateRows    Int?              @map("duplicate_rows")
+  failedRows       Int?              @map("failed_rows")
+  parserVersion    String?           @map("parser_version") @db.VarChar(40)
+  metadata         Json?
+  createdAt        DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime          @updatedAt @map("updated_at") @db.Timestamptz(6)
+  completedAt      DateTime?         @map("completed_at") @db.Timestamptz(6)
+
+  user        User         @relation(fields: [userId], references: [id], onDelete: Restrict)
+  account     Account      @relation(fields: [accountId], references: [id], onDelete: Restrict)
+  importItems ImportItem[]
+
+  @@unique([userId, accountId, fileHash])
+  @@index([userId, createdAt])
+  @@index([fileHash])
+  @@index([status])
+  @@map("import_batches")
+}
+
+model ImportItem {
+  id                    String                 @id @default(uuid()) @db.Uuid
+  importBatchId         String                 @map("import_batch_id") @db.Uuid
+  userId                String                 @map("user_id") @db.Uuid
+  accountId             String                 @map("account_id") @db.Uuid
+  rowNumber             Int?                   @map("row_number")
+  externalId            String?                @map("external_id") @db.VarChar(180)
+  rawDescription        String                 @map("raw_description") @db.VarChar(255)
+  normalizedDescription String?                @map("normalized_description") @db.VarChar(255)
+  amount                Decimal                @db.Decimal(19, 4)
+  inferredType          ImportItemInferredType @map("inferred_type")
+  transactionDate       DateTime               @map("transaction_date") @db.Date
+  postedAt              DateTime?              @map("posted_at") @db.Timestamptz(6)
+  suggestedCategoryId   String?                @map("suggested_category_id") @db.Uuid
+  matchedTransactionId  String?                @map("matched_transaction_id") @db.Uuid
+  status                ImportItemStatus       @default(PENDING_REVIEW)
+  fingerprint           String                 @db.VarChar(128)
+  rawPayload            Json?                  @map("raw_payload")
+  errorMessage          String?                @map("error_message") @db.Text
+  createdAt             DateTime               @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt             DateTime               @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  importBatch        ImportBatch  @relation(fields: [importBatchId], references: [id], onDelete: Restrict)
+  user               User         @relation(fields: [userId], references: [id], onDelete: Restrict)
+  account            Account      @relation(fields: [accountId], references: [id], onDelete: Restrict)
+  suggestedCategory  Category?    @relation(fields: [suggestedCategoryId], references: [id], onDelete: Restrict)
+  matchedTransaction Transaction? @relation("MatchedImportItem", fields: [matchedTransactionId], references: [id], onDelete: Restrict)
+  createdTransaction Transaction? @relation("ImportedTransaction")
+
+  @@unique([importBatchId, fingerprint])
+  @@index([importBatchId, status])
+  @@index([userId, fingerprint])
+  @@index([matchedTransactionId])
+  @@index([suggestedCategoryId])
+  @@map("import_items")
+}
+
+model AuditLog {
+  id            String         @id @default(uuid()) @db.Uuid
+  userId        String?        @map("user_id") @db.Uuid
+  actorUserId   String?        @map("actor_user_id") @db.Uuid
+  eventType     AuditEventType @map("event_type")
+  entityType    String?        @map("entity_type") @db.VarChar(80)
+  entityId      String?        @map("entity_id") @db.Uuid
+  action        String         @db.VarChar(80)
+  ipAddress     String?        @map("ip_address") @db.VarChar(45)
+  userAgent     String?        @map("user_agent") @db.VarChar(512)
+  before        Json?
+  after         Json?
+  metadata      Json?
+  riskLevel     RiskLevel      @default(LOW) @map("risk_level")
+  createdAt     DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  user      User? @relation("AuditLogUser", fields: [userId], references: [id], onDelete: Restrict)
+  actorUser User? @relation("AuditLogActor", fields: [actorUserId], references: [id], onDelete: Restrict)
+
+  @@index([userId, createdAt])
+  @@index([actorUserId, createdAt])
+  @@index([eventType, createdAt])
+  @@index([entityType, entityId])
+  @@map("audit_logs")
+}
+
+model AccountBalanceSnapshot {
+  id           String   @id @default(uuid()) @db.Uuid
+  userId       String   @map("user_id") @db.Uuid
+  accountId    String   @map("account_id") @db.Uuid
+  snapshotDate DateTime @map("snapshot_date") @db.Date
+  balance      Decimal  @db.Decimal(19, 4)
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Restrict)
+  account Account @relation(fields: [accountId], references: [id], onDelete: Restrict)
+
+  @@unique([accountId, snapshotDate])
+  @@index([userId, snapshotDate])
+  @@index([userId, accountId, snapshotDate])
+  @@map("account_balance_snapshots")
+}
+
+model MonthlyFinancialSummary {
+  id               String    @id @default(uuid()) @db.Uuid
+  userId           String    @map("user_id") @db.Uuid
+  month            DateTime  @db.Date
+  totalIncome      Decimal   @default(0) @map("total_income") @db.Decimal(19, 4)
+  totalExpense     Decimal   @default(0) @map("total_expense") @db.Decimal(19, 4)
+  netCashflow      Decimal   @default(0) @map("net_cashflow") @db.Decimal(19, 4)
+  savingsRate      Decimal?  @map("savings_rate") @db.Decimal(9, 4)
+  totalBalance     Decimal   @default(0) @map("total_balance") @db.Decimal(19, 4)
+  transactionCount Int       @default(0) @map("transaction_count")
+  calculatedAt     DateTime  @map("calculated_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@unique([userId, month])
+  @@index([userId, month])
+  @@map("monthly_financial_summaries")
+}
+
+model MonthlyCategorySummary {
+  id               String              @id @default(uuid()) @db.Uuid
+  userId           String              @map("user_id") @db.Uuid
+  categoryId       String              @map("category_id") @db.Uuid
+  month            DateTime            @db.Date
+  type             CategorySummaryType
+  totalAmount      Decimal             @default(0) @map("total_amount") @db.Decimal(19, 4)
+  transactionCount Int                 @default(0) @map("transaction_count")
+  calculatedAt     DateTime            @map("calculated_at") @db.Timestamptz(6)
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+
+  @@unique([userId, categoryId, month, type])
+  @@index([userId, month])
+  @@index([userId, categoryId, month])
+  @@map("monthly_category_summaries")
+}
