@@ -7,7 +7,9 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate:deploy": "prisma migrate deploy",
     "prisma:migrate:diff": "prisma migrate diff --from-empty --to-schema prisma/schema.prisma --script",
-    "db:verify-catalog": "node scripts/verify-supabase-catalog.mjs"
+    "db:verify-catalog": "node scripts/verify-supabase-catalog.mjs",
+    "db:expected-catalog": "node scripts/expected-catalog-from-migration.mjs",
+    "setup:env": "node scripts/setup-env.mjs"
   },
   "devDependencies": {
     "dotenv": "^17.2.3",

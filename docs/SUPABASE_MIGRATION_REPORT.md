@@ -2,8 +2,8 @@
 
 **Project ref:** `mzqipbkktbpdcasfvzny`  
 **Migration:** `20260624000100_init_supabase_schema`  
-**Generated:** 2025-06-25  
-**Status:** Migration applied successfully (reported by prior Codex run)
+**Generated:** 2025-06-25 (atualizado)  
+**Status:** Migration aplicada no Supabase (Codex) — verificação ao vivo **pendente** de credenciais DB
 
 ---
 
@@ -15,15 +15,28 @@ O Atlas Finance AI foi configurado para usar **Supabase PostgreSQL remoto** como
 - **NestJS** como camada de autenticação e regras de negócio (sem Supabase Auth)
 - Schema e entidades **inalterados** em relação ao design original
 
-A migration inicial cria **25 tabelas**, **39 enums**, **50 índices** e **48 foreign keys** no schema `public`.
+A migration inicial cria **25 tabelas**, **39 enums**, **84 índices** e **49 foreign keys** no schema `public`.
+
+### Estado desta sessão
+
+| Item | Status |
+|---|---|
+| `.env` criado (`npm run setup:env`) | ✅ JWT secrets gerados |
+| Senha DB no `.env` | ⏳ Ainda `<DB_PASSWORD>` — precisa preencher |
+| Supabase MCP (`.mcp.json`) | ✅ Configurado — requer OAuth no Cursor |
+| Supabase CLI login | ⏳ Não autenticado nesta máquina |
+| Catálogo esperado (migration) | ✅ `docs/expected-catalog-from-migration.json` |
+| Catálogo ao vivo (Postgres) | ⏳ `npm run db:verify-catalog` após preencher `.env` |
 
 Para revalidar o catálogo ao vivo no Supabase:
 
 ```bash
-cp .env.example .env
-# Preencha DIRECT_URL e DATABASE_URL
+npm run setup:env          # se .env ainda não existir
+# Edite .env: DIRECT_URL + DATABASE_URL com senha real
 npm run db:verify-catalog
 ```
+
+Ou autentique o **Supabase MCP** no Cursor (recarregue a janela após OAuth) e peça ao agente para rodar `execute_sql`.
 
 O script grava um snapshot em `docs/supabase-catalog-snapshot.json`.
 
@@ -384,8 +397,8 @@ Entidades **sem** `deleted_at` (por design): auth_sessions, password_reset_token
 
 | # | Severidade | Problema | Ação |
 |---|---|---|---|
-| 1 | Info | `.env` local ausente neste workspace | Copiar `.env.example` → `.env` com credenciais Supabase |
-| 2 | Baixa | `import_items.account_id` sem índice dedicado | Considerar índice futuro se consultas por conta forem frequentes |
+| 1 | Info | `.env` local sem senha DB | Rodar `npm run setup:env` e preencher `<DB_PASSWORD>` + `<REGION>` |
+| 2 | Baixa | `import_items.account_id` sem índice dedicado | Confirmado via `expected-catalog-from-migration.json` |
 | 3 | Baixa | `import_batches.account_id` sem índice dedicado | Coberto parcialmente pelo UNIQUE composto |
 | 4 | Info | `account_type.card` existe no enum mas cartão está fora do MVP | Reservado para evolução; sem impacto imediato |
 | 5 | Info | Índices parciais (`WHERE deleted_at IS NULL`) não criados | Recomendado apenas com volume alto (ver DATABASE_REVIEW.md) |

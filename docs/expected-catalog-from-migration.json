@@ -1,0 +1,1518 @@
+{
+  "generatedAt": "2026-06-25T13:44:04.140Z",
+  "source": "migration_file",
+  "migration": "20260624000100_init_supabase_schema",
+  "summary": {
+    "tableCount": 25,
+    "enumCount": 39,
+    "indexCount": 84,
+    "foreignKeyCount": 49,
+    "softDeleteTableCount": 9,
+    "monetaryColumnCount": 28,
+    "fkColumnsMissingIndex": [
+      {
+        "table_name": "import_items",
+        "column_name": "account_id",
+        "constraint_name": "import_items_account_id_fkey"
+      }
+    ]
+  },
+  "tables": [
+    {
+      "table_name": "users"
+    },
+    {
+      "table_name": "user_preferences"
+    },
+    {
+      "table_name": "auth_sessions"
+    },
+    {
+      "table_name": "password_reset_tokens"
+    },
+    {
+      "table_name": "accounts"
+    },
+    {
+      "table_name": "categories"
+    },
+    {
+      "table_name": "transactions"
+    },
+    {
+      "table_name": "transfers"
+    },
+    {
+      "table_name": "monthly_budgets"
+    },
+    {
+      "table_name": "budget_category_limits"
+    },
+    {
+      "table_name": "goals"
+    },
+    {
+      "table_name": "goal_contributions"
+    },
+    {
+      "table_name": "emergency_fund_plans"
+    },
+    {
+      "table_name": "recurring_transactions"
+    },
+    {
+      "table_name": "notifications"
+    },
+    {
+      "table_name": "financial_scores"
+    },
+    {
+      "table_name": "financial_score_components"
+    },
+    {
+      "table_name": "financial_insights"
+    },
+    {
+      "table_name": "insight_generation_runs"
+    },
+    {
+      "table_name": "import_batches"
+    },
+    {
+      "table_name": "import_items"
+    },
+    {
+      "table_name": "audit_logs"
+    },
+    {
+      "table_name": "account_balance_snapshots"
+    },
+    {
+      "table_name": "monthly_financial_summaries"
+    },
+    {
+      "table_name": "monthly_category_summaries"
+    }
+  ],
+  "enums": [
+    {
+      "enum_name": "user_status",
+      "labels": [
+        "active",
+        "pending_verification",
+        "locked",
+        "disabled",
+        "deleted"
+      ]
+    },
+    {
+      "enum_name": "dashboard_period_default",
+      "labels": [
+        "current_month",
+        "last_30_days",
+        "current_year"
+      ]
+    },
+    {
+      "enum_name": "auth_session_status",
+      "labels": [
+        "active",
+        "revoked",
+        "expired",
+        "rotated"
+      ]
+    },
+    {
+      "enum_name": "account_type",
+      "labels": [
+        "checking",
+        "digital",
+        "wallet",
+        "investment",
+        "card"
+      ]
+    },
+    {
+      "enum_name": "account_status",
+      "labels": [
+        "active",
+        "archived",
+        "deleted"
+      ]
+    },
+    {
+      "enum_name": "category_type",
+      "labels": [
+        "income",
+        "expense",
+        "both"
+      ]
+    },
+    {
+      "enum_name": "category_status",
+      "labels": [
+        "active",
+        "archived",
+        "deleted"
+      ]
+    },
+    {
+      "enum_name": "transaction_type",
+      "labels": [
+        "income",
+        "expense",
+        "transfer_in",
+        "transfer_out",
+        "adjustment"
+      ]
+    },
+    {
+      "enum_name": "transaction_status",
+      "labels": [
+        "pending",
+        "confirmed",
+        "ignored",
+        "deleted"
+      ]
+    },
+    {
+      "enum_name": "transaction_source",
+      "labels": [
+        "manual",
+        "csv",
+        "ofx",
+        "recurring",
+        "system"
+      ]
+    },
+    {
+      "enum_name": "transfer_status",
+      "labels": [
+        "confirmed",
+        "deleted"
+      ]
+    },
+    {
+      "enum_name": "monthly_budget_status",
+      "labels": [
+        "draft",
+        "active",
+        "closed",
+        "deleted"
+      ]
+    },
+    {
+      "enum_name": "goal_type",
+      "labels": [
+        "generic",
+        "emergency_fund",
+        "travel",
+        "vehicle",
+        "property",
+        "retirement",
+        "purchase"
+      ]
+    },
+    {
+      "enum_name": "goal_priority",
+      "labels": [
+        "low",
+        "medium",
+        "high"
+      ]
+    },
+    {
+      "enum_name": "goal_status",
+      "labels": [
+        "active",
+        "paused",
+        "completed",
+        "archived",
+        "deleted"
+      ]
+    },
+    {
+      "enum_name": "goal_contribution_type",
+      "labels": [
+        "contribution",
+        "withdrawal",
+        "adjustment"
+      ]
+    },
+    {
+      "enum_name": "emergency_fund_calculation_mode",
+      "labels": [
+        "manual",
+        "auto_from_categories"
+      ]
+    },
+    {
+      "enum_name": "recurrence_kind",
+      "labels": [
+        "weekly",
+        "monthly",
+        "yearly"
+      ]
+    },
+    {
+      "enum_name": "recurring_transaction_type",
+      "labels": [
+        "income",
+        "expense"
+      ]
+    },
+    {
+      "enum_name": "recurring_transaction_status",
+      "labels": [
+        "active",
+        "paused",
+        "ended",
+        "deleted"
+      ]
+    },
+    {
+      "enum_name": "notification_type",
+      "labels": [
+        "budget_80",
+        "budget_100",
+        "goal_reached",
+        "recurring_due",
+        "score_changed",
+        "insight_available",
+        "security"
+      ]
+    },
+    {
+      "enum_name": "notification_severity",
+      "labels": [
+        "info",
+        "warning",
+        "critical",
+        "success"
+      ]
+    },
+    {
+      "enum_name": "notification_channel",
+      "labels": [
+        "in_app",
+        "email",
+        "push"
+      ]
+    },
+    {
+      "enum_name": "notification_status",
+      "labels": [
+        "pending",
+        "sent",
+        "read",
+        "dismissed",
+        "failed"
+      ]
+    },
+    {
+      "enum_name": "financial_score_classification",
+      "labels": [
+        "critical",
+        "attention",
+        "good",
+        "excellent"
+      ]
+    },
+    {
+      "enum_name": "financial_score_component_type",
+      "labels": [
+        "savings_rate",
+        "budget_adherence",
+        "emergency_fund",
+        "goal_progress",
+        "net_worth_evolution"
+      ]
+    },
+    {
+      "enum_name": "financial_insight_type",
+      "labels": [
+        "spending_increase",
+        "budget_risk",
+        "subscription_saving",
+        "goal_projection",
+        "cashflow_summary",
+        "score_recommendation"
+      ]
+    },
+    {
+      "enum_name": "financial_insight_source",
+      "labels": [
+        "rule_engine",
+        "ai_service",
+        "hybrid"
+      ]
+    },
+    {
+      "enum_name": "financial_insight_severity",
+      "labels": [
+        "info",
+        "opportunity",
+        "warning",
+        "critical"
+      ]
+    },
+    {
+      "enum_name": "financial_insight_status",
+      "labels": [
+        "new",
+        "seen",
+        "dismissed",
+        "archived"
+      ]
+    },
+    {
+      "enum_name": "insight_generation_trigger",
+      "labels": [
+        "manual",
+        "scheduled",
+        "transaction_created",
+        "month_closed",
+        "score_updated"
+      ]
+    },
+    {
+      "enum_name": "run_status",
+      "labels": [
+        "queued",
+        "running",
+        "completed",
+        "failed",
+        "cancelled"
+      ]
+    },
+    {
+      "enum_name": "import_source_type",
+      "labels": [
+        "csv",
+        "ofx"
+      ]
+    },
+    {
+      "enum_name": "import_batch_status",
+      "labels": [
+        "uploaded",
+        "parsed",
+        "review_required",
+        "imported",
+        "failed",
+        "cancelled"
+      ]
+    },
+    {
+      "enum_name": "import_item_inferred_type",
+      "labels": [
+        "income",
+        "expense",
+        "unknown"
+      ]
+    },
+    {
+      "enum_name": "import_item_status",
+      "labels": [
+        "pending_review",
+        "ready",
+        "imported",
+        "duplicate",
+        "ignored",
+        "failed"
+      ]
+    },
+    {
+      "enum_name": "audit_event_type",
+      "labels": [
+        "login_success",
+        "login_failed",
+        "logout",
+        "password_reset_requested",
+        "password_changed",
+        "entity_created",
+        "entity_updated",
+        "entity_deleted",
+        "import_completed",
+        "score_calculated",
+        "insight_generated",
+        "security_event"
+      ]
+    },
+    {
+      "enum_name": "risk_level",
+      "labels": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ]
+    },
+    {
+      "enum_name": "category_summary_type",
+      "labels": [
+        "income",
+        "expense"
+      ]
+    }
+  ],
+  "indexes": [
+    {
+      "tablename": "users",
+      "indexname": "users_email_normalized_key",
+      "unique": true,
+      "columns": "email_normalized"
+    },
+    {
+      "tablename": "users",
+      "indexname": "users_status_idx",
+      "unique": false,
+      "columns": "status"
+    },
+    {
+      "tablename": "users",
+      "indexname": "users_deleted_at_idx",
+      "unique": false,
+      "columns": "deleted_at"
+    },
+    {
+      "tablename": "user_preferences",
+      "indexname": "user_preferences_user_id_key",
+      "unique": true,
+      "columns": "user_id"
+    },
+    {
+      "tablename": "auth_sessions",
+      "indexname": "auth_sessions_user_id_status_idx",
+      "unique": false,
+      "columns": "user_id, status"
+    },
+    {
+      "tablename": "auth_sessions",
+      "indexname": "auth_sessions_refresh_token_hash_idx",
+      "unique": false,
+      "columns": "refresh_token_hash"
+    },
+    {
+      "tablename": "auth_sessions",
+      "indexname": "auth_sessions_expires_at_idx",
+      "unique": false,
+      "columns": "expires_at"
+    },
+    {
+      "tablename": "password_reset_tokens",
+      "indexname": "password_reset_tokens_token_hash_idx",
+      "unique": false,
+      "columns": "token_hash"
+    },
+    {
+      "tablename": "password_reset_tokens",
+      "indexname": "password_reset_tokens_user_id_created_at_idx",
+      "unique": false,
+      "columns": "user_id, created_at"
+    },
+    {
+      "tablename": "password_reset_tokens",
+      "indexname": "password_reset_tokens_expires_at_idx",
+      "unique": false,
+      "columns": "expires_at"
+    },
+    {
+      "tablename": "accounts",
+      "indexname": "accounts_user_id_status_idx",
+      "unique": false,
+      "columns": "user_id, status"
+    },
+    {
+      "tablename": "accounts",
+      "indexname": "accounts_user_id_type_idx",
+      "unique": false,
+      "columns": "user_id, type"
+    },
+    {
+      "tablename": "accounts",
+      "indexname": "accounts_deleted_at_idx",
+      "unique": false,
+      "columns": "deleted_at"
+    },
+    {
+      "tablename": "categories",
+      "indexname": "categories_user_id_status_idx",
+      "unique": false,
+      "columns": "user_id, status"
+    },
+    {
+      "tablename": "categories",
+      "indexname": "categories_parent_id_idx",
+      "unique": false,
+      "columns": "parent_id"
+    },
+    {
+      "tablename": "categories",
+      "indexname": "categories_is_default_idx",
+      "unique": false,
+      "columns": "is_default"
+    },
+    {
+      "tablename": "categories",
+      "indexname": "categories_deleted_at_idx",
+      "unique": false,
+      "columns": "deleted_at"
+    },
+    {
+      "tablename": "categories",
+      "indexname": "categories_user_id_type_name_key",
+      "unique": true,
+      "columns": "user_id, type, name"
+    },
+    {
+      "tablename": "transactions",
+      "indexname": "transactions_import_item_id_key",
+      "unique": true,
+      "columns": "import_item_id"
+    },
+    {
+      "tablename": "transactions",
+      "indexname": "transactions_user_id_transaction_date_idx",
+      "unique": false,
+      "columns": "user_id, transaction_date"
+    },
+    {
+      "tablename": "transactions",
+      "indexname": "transactions_user_id_type_transaction_date_idx",
+      "unique": false,
+      "columns": "user_id, type, transaction_date"
+    },
+    {
+      "tablename": "transactions",
+      "indexname": "transactions_user_id_account_id_transaction_date_idx",
+      "unique": false,
+      "columns": "user_id, account_id, transaction_date"
+    },
+    {
+      "tablename": "transactions",
+      "indexname": "transactions_user_id_category_id_transaction_date_idx",
+      "unique": false,
+      "columns": "user_id, category_id, transaction_date"
+    },
+    {
+      "tablename": "transactions",
+      "indexname": "transactions_user_id_status_transaction_date_idx",
+      "unique": false,
+      "columns": "user_id, status, transaction_date"
+    },
+    {
+      "tablename": "transactions",
+      "indexname": "transactions_fingerprint_idx",
+      "unique": false,
+      "columns": "fingerprint"
+    },
+    {
+      "tablename": "transactions",
+      "indexname": "transactions_transfer_id_idx",
+      "unique": false,
+      "columns": "transfer_id"
+    },
+    {
+      "tablename": "transactions",
+      "indexname": "transactions_recurring_transaction_id_idx",
+      "unique": false,
+      "columns": "recurring_transaction_id"
+    },
+    {
+      "tablename": "transactions",
+      "indexname": "transactions_deleted_at_idx",
+      "unique": false,
+      "columns": "deleted_at"
+    },
+    {
+      "tablename": "transfers",
+      "indexname": "transfers_user_id_transfer_date_idx",
+      "unique": false,
+      "columns": "user_id, transfer_date"
+    },
+    {
+      "tablename": "transfers",
+      "indexname": "transfers_from_account_id_idx",
+      "unique": false,
+      "columns": "from_account_id"
+    },
+    {
+      "tablename": "transfers",
+      "indexname": "transfers_to_account_id_idx",
+      "unique": false,
+      "columns": "to_account_id"
+    },
+    {
+      "tablename": "transfers",
+      "indexname": "transfers_deleted_at_idx",
+      "unique": false,
+      "columns": "deleted_at"
+    },
+    {
+      "tablename": "monthly_budgets",
+      "indexname": "monthly_budgets_user_id_month_status_idx",
+      "unique": false,
+      "columns": "user_id, month, status"
+    },
+    {
+      "tablename": "monthly_budgets",
+      "indexname": "monthly_budgets_deleted_at_idx",
+      "unique": false,
+      "columns": "deleted_at"
+    },
+    {
+      "tablename": "monthly_budgets",
+      "indexname": "monthly_budgets_user_id_month_key",
+      "unique": true,
+      "columns": "user_id, month"
+    },
+    {
+      "tablename": "budget_category_limits",
+      "indexname": "budget_category_limits_user_id_category_id_idx",
+      "unique": false,
+      "columns": "user_id, category_id"
+    },
+    {
+      "tablename": "budget_category_limits",
+      "indexname": "budget_category_limits_budget_id_category_id_key",
+      "unique": true,
+      "columns": "budget_id, category_id"
+    },
+    {
+      "tablename": "goals",
+      "indexname": "goals_user_id_status_idx",
+      "unique": false,
+      "columns": "user_id, status"
+    },
+    {
+      "tablename": "goals",
+      "indexname": "goals_user_id_type_idx",
+      "unique": false,
+      "columns": "user_id, type"
+    },
+    {
+      "tablename": "goals",
+      "indexname": "goals_deleted_at_idx",
+      "unique": false,
+      "columns": "deleted_at"
+    },
+    {
+      "tablename": "goal_contributions",
+      "indexname": "goal_contributions_user_id_goal_id_contribution_date_idx",
+      "unique": false,
+      "columns": "user_id, goal_id, contribution_date"
+    },
+    {
+      "tablename": "goal_contributions",
+      "indexname": "goal_contributions_transaction_id_idx",
+      "unique": false,
+      "columns": "transaction_id"
+    },
+    {
+      "tablename": "goal_contributions",
+      "indexname": "goal_contributions_deleted_at_idx",
+      "unique": false,
+      "columns": "deleted_at"
+    },
+    {
+      "tablename": "emergency_fund_plans",
+      "indexname": "emergency_fund_plans_goal_id_key",
+      "unique": true,
+      "columns": "goal_id"
+    },
+    {
+      "tablename": "emergency_fund_plans",
+      "indexname": "emergency_fund_plans_user_id_idx",
+      "unique": false,
+      "columns": "user_id"
+    },
+    {
+      "tablename": "recurring_transactions",
+      "indexname": "recurring_transactions_user_id_status_idx",
+      "unique": false,
+      "columns": "user_id, status"
+    },
+    {
+      "tablename": "recurring_transactions",
+      "indexname": "recurring_transactions_user_id_next_occurrence_date_idx",
+      "unique": false,
+      "columns": "user_id, next_occurrence_date"
+    },
+    {
+      "tablename": "recurring_transactions",
+      "indexname": "recurring_transactions_account_id_idx",
+      "unique": false,
+      "columns": "account_id"
+    },
+    {
+      "tablename": "recurring_transactions",
+      "indexname": "recurring_transactions_category_id_idx",
+      "unique": false,
+      "columns": "category_id"
+    },
+    {
+      "tablename": "recurring_transactions",
+      "indexname": "recurring_transactions_deleted_at_idx",
+      "unique": false,
+      "columns": "deleted_at"
+    },
+    {
+      "tablename": "notifications",
+      "indexname": "notifications_user_id_status_created_at_idx",
+      "unique": false,
+      "columns": "user_id, status, created_at"
+    },
+    {
+      "tablename": "notifications",
+      "indexname": "notifications_user_id_type_idx",
+      "unique": false,
+      "columns": "user_id, type"
+    },
+    {
+      "tablename": "notifications",
+      "indexname": "notifications_scheduled_for_idx",
+      "unique": false,
+      "columns": "scheduled_for"
+    },
+    {
+      "tablename": "financial_scores",
+      "indexname": "financial_scores_user_id_calculated_at_idx",
+      "unique": false,
+      "columns": "user_id, calculated_at"
+    },
+    {
+      "tablename": "financial_scores",
+      "indexname": "financial_scores_user_id_period_start_period_end_idx",
+      "unique": false,
+      "columns": "user_id, period_start, period_end"
+    },
+    {
+      "tablename": "financial_scores",
+      "indexname": "financial_scores_user_id_period_start_period_end_calculatio_key",
+      "unique": true,
+      "columns": "user_id, period_start, period_end, calculation_version"
+    },
+    {
+      "tablename": "financial_score_components",
+      "indexname": "financial_score_components_user_id_idx",
+      "unique": false,
+      "columns": "user_id"
+    },
+    {
+      "tablename": "financial_score_components",
+      "indexname": "financial_score_components_financial_score_id_component_key",
+      "unique": true,
+      "columns": "financial_score_id, component"
+    },
+    {
+      "tablename": "financial_insights",
+      "indexname": "financial_insights_user_id_status_created_at_idx",
+      "unique": false,
+      "columns": "user_id, status, created_at"
+    },
+    {
+      "tablename": "financial_insights",
+      "indexname": "financial_insights_user_id_type_period_start_period_end_idx",
+      "unique": false,
+      "columns": "user_id, type, period_start, period_end"
+    },
+    {
+      "tablename": "financial_insights",
+      "indexname": "financial_insights_generated_by_run_id_idx",
+      "unique": false,
+      "columns": "generated_by_run_id"
+    },
+    {
+      "tablename": "insight_generation_runs",
+      "indexname": "insight_generation_runs_user_id_status_created_at_idx",
+      "unique": false,
+      "columns": "user_id, status, created_at"
+    },
+    {
+      "tablename": "insight_generation_runs",
+      "indexname": "insight_generation_runs_user_id_period_start_period_end_idx",
+      "unique": false,
+      "columns": "user_id, period_start, period_end"
+    },
+    {
+      "tablename": "import_batches",
+      "indexname": "import_batches_user_id_created_at_idx",
+      "unique": false,
+      "columns": "user_id, created_at"
+    },
+    {
+      "tablename": "import_batches",
+      "indexname": "import_batches_file_hash_idx",
+      "unique": false,
+      "columns": "file_hash"
+    },
+    {
+      "tablename": "import_batches",
+      "indexname": "import_batches_status_idx",
+      "unique": false,
+      "columns": "status"
+    },
+    {
+      "tablename": "import_batches",
+      "indexname": "import_batches_user_id_account_id_file_hash_key",
+      "unique": true,
+      "columns": "user_id, account_id, file_hash"
+    },
+    {
+      "tablename": "import_items",
+      "indexname": "import_items_import_batch_id_status_idx",
+      "unique": false,
+      "columns": "import_batch_id, status"
+    },
+    {
+      "tablename": "import_items",
+      "indexname": "import_items_user_id_fingerprint_idx",
+      "unique": false,
+      "columns": "user_id, fingerprint"
+    },
+    {
+      "tablename": "import_items",
+      "indexname": "import_items_matched_transaction_id_idx",
+      "unique": false,
+      "columns": "matched_transaction_id"
+    },
+    {
+      "tablename": "import_items",
+      "indexname": "import_items_suggested_category_id_idx",
+      "unique": false,
+      "columns": "suggested_category_id"
+    },
+    {
+      "tablename": "import_items",
+      "indexname": "import_items_import_batch_id_fingerprint_key",
+      "unique": true,
+      "columns": "import_batch_id, fingerprint"
+    },
+    {
+      "tablename": "audit_logs",
+      "indexname": "audit_logs_user_id_created_at_idx",
+      "unique": false,
+      "columns": "user_id, created_at"
+    },
+    {
+      "tablename": "audit_logs",
+      "indexname": "audit_logs_actor_user_id_created_at_idx",
+      "unique": false,
+      "columns": "actor_user_id, created_at"
+    },
+    {
+      "tablename": "audit_logs",
+      "indexname": "audit_logs_event_type_created_at_idx",
+      "unique": false,
+      "columns": "event_type, created_at"
+    },
+    {
+      "tablename": "audit_logs",
+      "indexname": "audit_logs_entity_type_entity_id_idx",
+      "unique": false,
+      "columns": "entity_type, entity_id"
+    },
+    {
+      "tablename": "account_balance_snapshots",
+      "indexname": "account_balance_snapshots_user_id_snapshot_date_idx",
+      "unique": false,
+      "columns": "user_id, snapshot_date"
+    },
+    {
+      "tablename": "account_balance_snapshots",
+      "indexname": "account_balance_snapshots_user_id_account_id_snapshot_date_idx",
+      "unique": false,
+      "columns": "user_id, account_id, snapshot_date"
+    },
+    {
+      "tablename": "account_balance_snapshots",
+      "indexname": "account_balance_snapshots_account_id_snapshot_date_key",
+      "unique": true,
+      "columns": "account_id, snapshot_date"
+    },
+    {
+      "tablename": "monthly_financial_summaries",
+      "indexname": "monthly_financial_summaries_user_id_month_idx",
+      "unique": false,
+      "columns": "user_id, month"
+    },
+    {
+      "tablename": "monthly_financial_summaries",
+      "indexname": "monthly_financial_summaries_user_id_month_key",
+      "unique": true,
+      "columns": "user_id, month"
+    },
+    {
+      "tablename": "monthly_category_summaries",
+      "indexname": "monthly_category_summaries_user_id_month_idx",
+      "unique": false,
+      "columns": "user_id, month"
+    },
+    {
+      "tablename": "monthly_category_summaries",
+      "indexname": "monthly_category_summaries_user_id_category_id_month_idx",
+      "unique": false,
+      "columns": "user_id, category_id, month"
+    },
+    {
+      "tablename": "monthly_category_summaries",
+      "indexname": "monthly_category_summaries_user_id_category_id_month_type_key",
+      "unique": true,
+      "columns": "user_id, category_id, month, type"
+    }
+  ],
+  "foreignKeys": [
+    {
+      "table_name": "user_preferences",
+      "constraint_name": "user_preferences_user_id_fkey",
+      "column_name": "user_id",
+      "foreign_table_name": "users",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "auth_sessions",
+      "constraint_name": "auth_sessions_user_id_fkey",
+      "column_name": "user_id",
+      "foreign_table_name": "users",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "password_reset_tokens",
+      "constraint_name": "password_reset_tokens_user_id_fkey",
+      "column_name": "user_id",
+      "foreign_table_name": "users",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "accounts",
+      "constraint_name": "accounts_user_id_fkey",
+      "column_name": "user_id",
+      "foreign_table_name": "users",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "categories",
+      "constraint_name": "categories_user_id_fkey",
+      "column_name": "user_id",
+      "foreign_table_name": "users",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "categories",
+      "constraint_name": "categories_parent_id_fkey",
+      "column_name": "parent_id",
+      "foreign_table_name": "categories",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "transactions",
+      "constraint_name": "transactions_user_id_fkey",
+      "column_name": "user_id",
+      "foreign_table_name": "users",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "transactions",
+      "constraint_name": "transactions_account_id_fkey",
+      "column_name": "account_id",
+      "foreign_table_name": "accounts",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "transactions",
+      "constraint_name": "transactions_category_id_fkey",
+      "column_name": "category_id",
+      "foreign_table_name": "categories",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "transactions",
+      "constraint_name": "transactions_import_item_id_fkey",
+      "column_name": "import_item_id",
+      "foreign_table_name": "import_items",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "transactions",
+      "constraint_name": "transactions_recurring_transaction_id_fkey",
+      "column_name": "recurring_transaction_id",
+      "foreign_table_name": "recurring_transactions",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "transactions",
+      "constraint_name": "transactions_transfer_id_fkey",
+      "column_name": "transfer_id",
+      "foreign_table_name": "transfers",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "transfers",
+      "constraint_name": "transfers_user_id_fkey",
+      "column_name": "user_id",
+      "foreign_table_name": "users",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "transfers",
+      "constraint_name": "transfers_from_account_id_fkey",
+      "column_name": "from_account_id",
+      "foreign_table_name": "accounts",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "transfers",
+      "constraint_name": "transfers_to_account_id_fkey",
+      "column_name": "to_account_id",
+      "foreign_table_name": "accounts",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "monthly_budgets",
+      "constraint_name": "monthly_budgets_user_id_fkey",
+      "column_name": "user_id",
+      "foreign_table_name": "users",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "budget_category_limits",
+      "constraint_name": "budget_category_limits_budget_id_fkey",
+      "column_name": "budget_id",
+      "foreign_table_name": "monthly_budgets",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "budget_category_limits",
+      "constraint_name": "budget_category_limits_user_id_fkey",
+      "column_name": "user_id",
+      "foreign_table_name": "users",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "budget_category_limits",
+      "constraint_name": "budget_category_limits_category_id_fkey",
+      "column_name": "category_id",
+      "foreign_table_name": "categories",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "goals",
+      "constraint_name": "goals_user_id_fkey",
+      "column_name": "user_id",
+      "foreign_table_name": "users",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "goal_contributions",
+      "constraint_name": "goal_contributions_user_id_fkey",
+      "column_name": "user_id",
+      "foreign_table_name": "users",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "goal_contributions",
+      "constraint_name": "goal_contributions_goal_id_fkey",
+      "column_name": "goal_id",
+      "foreign_table_name": "goals",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "goal_contributions",
+      "constraint_name": "goal_contributions_transaction_id_fkey",
+      "column_name": "transaction_id",
+      "foreign_table_name": "transactions",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "emergency_fund_plans",
+      "constraint_name": "emergency_fund_plans_user_id_fkey",
+      "column_name": "user_id",
+      "foreign_table_name": "users",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "emergency_fund_plans",
+      "constraint_name": "emergency_fund_plans_goal_id_fkey",
+      "column_name": "goal_id",
+      "foreign_table_name": "goals",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "recurring_transactions",
+      "constraint_name": "recurring_transactions_user_id_fkey",
+      "column_name": "user_id",
+      "foreign_table_name": "users",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "recurring_transactions",
+      "constraint_name": "recurring_transactions_account_id_fkey",
+      "column_name": "account_id",
+      "foreign_table_name": "accounts",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "recurring_transactions",
+      "constraint_name": "recurring_transactions_category_id_fkey",
+      "column_name": "category_id",
+      "foreign_table_name": "categories",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "notifications",
+      "constraint_name": "notifications_user_id_fkey",
+      "column_name": "user_id",
+      "foreign_table_name": "users",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "financial_scores",
+      "constraint_name": "financial_scores_user_id_fkey",
+      "column_name": "user_id",
+      "foreign_table_name": "users",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "financial_score_components",
+      "constraint_name": "financial_score_components_financial_score_id_fkey",
+      "column_name": "financial_score_id",
+      "foreign_table_name": "financial_scores",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "financial_score_components",
+      "constraint_name": "financial_score_components_user_id_fkey",
+      "column_name": "user_id",
+      "foreign_table_name": "users",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "financial_insights",
+      "constraint_name": "financial_insights_user_id_fkey",
+      "column_name": "user_id",
+      "foreign_table_name": "users",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "financial_insights",
+      "constraint_name": "financial_insights_generated_by_run_id_fkey",
+      "column_name": "generated_by_run_id",
+      "foreign_table_name": "insight_generation_runs",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "insight_generation_runs",
+      "constraint_name": "insight_generation_runs_user_id_fkey",
+      "column_name": "user_id",
+      "foreign_table_name": "users",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "import_batches",
+      "constraint_name": "import_batches_user_id_fkey",
+      "column_name": "user_id",
+      "foreign_table_name": "users",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "import_batches",
+      "constraint_name": "import_batches_account_id_fkey",
+      "column_name": "account_id",
+      "foreign_table_name": "accounts",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "import_items",
+      "constraint_name": "import_items_import_batch_id_fkey",
+      "column_name": "import_batch_id",
+      "foreign_table_name": "import_batches",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "import_items",
+      "constraint_name": "import_items_user_id_fkey",
+      "column_name": "user_id",
+      "foreign_table_name": "users",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "import_items",
+      "constraint_name": "import_items_account_id_fkey",
+      "column_name": "account_id",
+      "foreign_table_name": "accounts",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "import_items",
+      "constraint_name": "import_items_suggested_category_id_fkey",
+      "column_name": "suggested_category_id",
+      "foreign_table_name": "categories",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "import_items",
+      "constraint_name": "import_items_matched_transaction_id_fkey",
+      "column_name": "matched_transaction_id",
+      "foreign_table_name": "transactions",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "audit_logs",
+      "constraint_name": "audit_logs_user_id_fkey",
+      "column_name": "user_id",
+      "foreign_table_name": "users",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "audit_logs",
+      "constraint_name": "audit_logs_actor_user_id_fkey",
+      "column_name": "actor_user_id",
+      "foreign_table_name": "users",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "account_balance_snapshots",
+      "constraint_name": "account_balance_snapshots_user_id_fkey",
+      "column_name": "user_id",
+      "foreign_table_name": "users",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "account_balance_snapshots",
+      "constraint_name": "account_balance_snapshots_account_id_fkey",
+      "column_name": "account_id",
+      "foreign_table_name": "accounts",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "monthly_financial_summaries",
+      "constraint_name": "monthly_financial_summaries_user_id_fkey",
+      "column_name": "user_id",
+      "foreign_table_name": "users",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "monthly_category_summaries",
+      "constraint_name": "monthly_category_summaries_user_id_fkey",
+      "column_name": "user_id",
+      "foreign_table_name": "users",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "monthly_category_summaries",
+      "constraint_name": "monthly_category_summaries_category_id_fkey",
+      "column_name": "category_id",
+      "foreign_table_name": "categories",
+      "foreign_column_name": "id"
+    }
+  ],
+  "softDeleteColumns": [
+    {
+      "table_name": "users",
+      "column_name": "deleted_at"
+    },
+    {
+      "table_name": "accounts",
+      "column_name": "deleted_at"
+    },
+    {
+      "table_name": "categories",
+      "column_name": "deleted_at"
+    },
+    {
+      "table_name": "transactions",
+      "column_name": "deleted_at"
+    },
+    {
+      "table_name": "transfers",
+      "column_name": "deleted_at"
+    },
+    {
+      "table_name": "monthly_budgets",
+      "column_name": "deleted_at"
+    },
+    {
+      "table_name": "goals",
+      "column_name": "deleted_at"
+    },
+    {
+      "table_name": "goal_contributions",
+      "column_name": "deleted_at"
+    },
+    {
+      "table_name": "recurring_transactions",
+      "column_name": "deleted_at"
+    }
+  ],
+  "monetaryColumns": [
+    {
+      "table_name": "accounts",
+      "column_name": "initial_balance",
+      "numeric_precision": 19,
+      "numeric_scale": 4
+    },
+    {
+      "table_name": "accounts",
+      "column_name": "current_balance",
+      "numeric_precision": 19,
+      "numeric_scale": 4
+    },
+    {
+      "table_name": "transactions",
+      "column_name": "amount",
+      "numeric_precision": 19,
+      "numeric_scale": 4
+    },
+    {
+      "table_name": "transfers",
+      "column_name": "amount",
+      "numeric_precision": 19,
+      "numeric_scale": 4
+    },
+    {
+      "table_name": "monthly_budgets",
+      "column_name": "total_limit",
+      "numeric_precision": 19,
+      "numeric_scale": 4
+    },
+    {
+      "table_name": "budget_category_limits",
+      "column_name": "limit_amount",
+      "numeric_precision": 19,
+      "numeric_scale": 4
+    },
+    {
+      "table_name": "goals",
+      "column_name": "target_amount",
+      "numeric_precision": 19,
+      "numeric_scale": 4
+    },
+    {
+      "table_name": "goals",
+      "column_name": "current_amount",
+      "numeric_precision": 19,
+      "numeric_scale": 4
+    },
+    {
+      "table_name": "goal_contributions",
+      "column_name": "amount",
+      "numeric_precision": 19,
+      "numeric_scale": 4
+    },
+    {
+      "table_name": "emergency_fund_plans",
+      "column_name": "essential_monthly_expense",
+      "numeric_precision": 19,
+      "numeric_scale": 4
+    },
+    {
+      "table_name": "recurring_transactions",
+      "column_name": "amount",
+      "numeric_precision": 19,
+      "numeric_scale": 4
+    },
+    {
+      "table_name": "financial_scores",
+      "column_name": "savings_rate",
+      "numeric_precision": 9,
+      "numeric_scale": 4
+    },
+    {
+      "table_name": "financial_scores",
+      "column_name": "expense_ratio",
+      "numeric_precision": 9,
+      "numeric_scale": 4
+    },
+    {
+      "table_name": "financial_scores",
+      "column_name": "emergency_fund_months",
+      "numeric_precision": 9,
+      "numeric_scale": 4
+    },
+    {
+      "table_name": "financial_scores",
+      "column_name": "budget_adherence_rate",
+      "numeric_precision": 9,
+      "numeric_scale": 4
+    },
+    {
+      "table_name": "financial_scores",
+      "column_name": "goal_progress_rate",
+      "numeric_precision": 9,
+      "numeric_scale": 4
+    },
+    {
+      "table_name": "financial_scores",
+      "column_name": "net_worth_delta",
+      "numeric_precision": 19,
+      "numeric_scale": 4
+    },
+    {
+      "table_name": "financial_score_components",
+      "column_name": "raw_value",
+      "numeric_precision": 19,
+      "numeric_scale": 4
+    },
+    {
+      "table_name": "financial_score_components",
+      "column_name": "weight",
+      "numeric_precision": 9,
+      "numeric_scale": 4
+    },
+    {
+      "table_name": "financial_insights",
+      "column_name": "confidence",
+      "numeric_precision": 5,
+      "numeric_scale": 4
+    },
+    {
+      "table_name": "import_items",
+      "column_name": "amount",
+      "numeric_precision": 19,
+      "numeric_scale": 4
+    },
+    {
+      "table_name": "account_balance_snapshots",
+      "column_name": "balance",
+      "numeric_precision": 19,
+      "numeric_scale": 4
+    },
+    {
+      "table_name": "monthly_financial_summaries",
+      "column_name": "total_income",
+      "numeric_precision": 19,
+      "numeric_scale": 4
+    },
+    {
+      "table_name": "monthly_financial_summaries",
+      "column_name": "total_expense",
+      "numeric_precision": 19,
+      "numeric_scale": 4
+    },
+    {
+      "table_name": "monthly_financial_summaries",
+      "column_name": "net_cashflow",
+      "numeric_precision": 19,
+      "numeric_scale": 4
+    },
+    {
+      "table_name": "monthly_financial_summaries",
+      "column_name": "savings_rate",
+      "numeric_precision": 9,
+      "numeric_scale": 4
+    },
+    {
+      "table_name": "monthly_financial_summaries",
+      "column_name": "total_balance",
+      "numeric_precision": 19,
+      "numeric_scale": 4
+    },
+    {
+      "table_name": "monthly_category_summaries",
+      "column_name": "total_amount",
+      "numeric_precision": 19,
+      "numeric_scale": 4
+    }
+  ]
+}
