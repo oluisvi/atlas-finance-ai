@@ -2,6 +2,7 @@
 
 **Data:** 2026-08-04
 **Escopo:** fundacao NestJS conectavel ao PostgreSQL remoto Supabase via Prisma.
+**Ultima verificacao de conexao:** 2026-08-04
 
 ## 1. Resumo
 
@@ -153,18 +154,45 @@ Nenhuma connection string, credencial ou detalhe interno do driver e exposto.
 
 ## 7. Resultado da Conexao com Supabase
 
-A conexao real com Supabase nao foi concluida nesta etapa porque a `.env` local ainda contem placeholders em:
+A conexao real com Supabase ainda nao foi concluida porque a `.env` local contem placeholders em:
 
 - `DATABASE_URL`
 - `DIRECT_URL`
 
-O backend falhou corretamente antes de abrir conexao, com erro claro:
+Inspecao mascarada do `.env`:
+
+| Variavel | Presente | Valor real | Diagnostico |
+|---|---:|---:|---|
+| `DATABASE_URL` | Sim | Nao | contem placeholder e nao forma URL valida |
+| `DIRECT_URL` | Sim | Nao | host, porta, database e `sslmode=require` estao no formato esperado, mas ainda contem placeholder de credencial |
+
+O comando existente do projeto foi executado:
+
+```bash
+npm run start:api
+```
+
+Resultado: a aplicacao iniciou o bootstrap do NestJS, mas falhou corretamente antes de abrir porta ou conectar ao banco:
 
 ```text
 DATABASE_URL must not contain placeholder tokens
 ```
 
-Isso confirma a validacao fail-fast, mas deixa a comprovacao remota pendente ate as URLs reais serem preenchidas no ambiente local/CI.
+Isso confirma a validacao fail-fast e evita que a aplicacao use connection strings incompletas. Como a API nao abriu porta, os endpoints abaixo nao puderam ser testados contra Supabase real nesta execucao:
+
+```text
+GET /api/v1/health
+GET /api/v1/health/liveness
+GET /api/v1/health/readiness
+```
+
+O readiness continuara executando consulta real via Prisma quando `DATABASE_URL` for real, pois `HealthService.getHealth()` chama `PrismaService.checkConnection()`, que executa:
+
+```sql
+SELECT 1::int AS ok
+```
+
+Nenhuma query de escrita foi executada.
 
 ## 8. Testes e Validacoes Executadas
 
@@ -180,6 +208,8 @@ npm run typecheck
 npm run test
 npm run lint
 npm run build
+npm run start:api
+npm audit --omit=dev
 ```
 
 Resultados:
@@ -193,12 +223,14 @@ Resultados:
 | Lint | Passou |
 | Build | Passou |
 | Health em memoria com Prisma mockado | Passou: HTTP 200 |
-| Health com Supabase real | Pendente: `.env` ainda contem placeholders |
+| `npm run start:api` | Falhou de forma esperada: `DATABASE_URL` contem placeholder |
+| Health com Supabase real | Nao executado: API nao abriu porta por `.env` placeholder |
 | `npm audit --omit=dev` | Falhou: 6 vulnerabilidades transitivas na cadeia do Prisma/dev tooling |
 
 ## 9. Limitacoes Encontradas
 
 - A `.env` local ainda nao possui `DATABASE_URL` e `DIRECT_URL` reais.
+- Sem `DATABASE_URL` real, nao e possivel validar NestJS -> Prisma 7 -> Supabase PostgreSQL remoto nem chamar os endpoints de health contra banco real.
 - `npm install` e `npm audit --omit=dev` reportaram 6 vulnerabilidades transitivas, principalmente em dependencias do Prisma CLI/dev tooling (`@prisma/dev`, `@hono/node-server`, `hono`, `fast-uri`, `valibot`). Nenhum `npm audit fix` foi executado.
 - O modo dev com `tsx` nao emite metadata de tipos para DI do NestJS; por isso os providers usam `@Inject(...)` explicitamente.
 - O wrapper padrao de `@prisma/client` nao exportou `PrismaClient` corretamente neste ambiente com Prisma 7; o service carrega o client gerado sem alterar o schema.
