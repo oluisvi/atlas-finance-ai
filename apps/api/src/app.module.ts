@@ -9,8 +9,9 @@ import { HealthModule } from "./modules/health/health.module.js";
 import { PrismaModule } from "./modules/prisma/prisma.module.js";
 import { UsersModule } from "./modules/users/users.module.js";
 import { TransactionsModule } from "./modules/transactions/transactions.module.js";
+import { TransfersModule } from "./modules/transfers/transfers.module.js";
 
 @Module({
-  imports: [AppConfigModule, PrismaModule, AuditModule, UsersModule, AuthModule, AccountsModule, CategoriesModule, TransactionsModule, HealthModule]
+  imports: [AppConfigModule, PrismaModule, AuditModule, UsersModule, AuthModule, AccountsModule, CategoriesModule, TransactionsModule, TransfersModule, HealthModule]
 })
 export class AppModule {}
