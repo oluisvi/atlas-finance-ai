@@ -1,0 +1,6 @@
+import { Type } from "class-transformer";
+import { IsDateString, IsEnum, IsIn, IsInt, IsOptional, IsString, IsUUID, Max, MaxLength, Min } from "class-validator";
+import { TransactionStatusDto, TransactionTypeDto } from "./transaction.dto.js";
+export enum TransactionSortByDto { TRANSACTION_DATE = "transactionDate", CREATED_AT = "createdAt", AMOUNT = "amount" }
+export enum SortOrderDto { ASC = "asc", DESC = "desc" }
+export class ListTransactionsDto { @IsOptional() @IsUUID() accountId?: string; @IsOptional() @IsUUID() categoryId?: string; @IsOptional() @IsEnum(TransactionTypeDto) type?: TransactionTypeDto; @IsOptional() @IsEnum(TransactionStatusDto) status?: TransactionStatusDto; @IsOptional() @IsString() @IsIn(["BRL", "USD", "EUR"]) currency?: string; @IsOptional() @IsDateString() startDate?: string; @IsOptional() @IsDateString() endDate?: string; @IsOptional() @IsString() @MaxLength(180) search?: string; @IsOptional() @Type(() => Number) @IsInt() @Min(1) page = 1; @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(100) pageSize = 20; @IsOptional() @IsEnum(TransactionSortByDto) sortBy: TransactionSortByDto = TransactionSortByDto.TRANSACTION_DATE; @IsOptional() @IsEnum(SortOrderDto) sortOrder: SortOrderDto = SortOrderDto.DESC; }
