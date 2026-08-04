@@ -1,149 +1,266 @@
--- Atlas Finance AI — Recommended Row Level Security (RLS) policies
--- Status: NOT APPLIED — for future activation only.
+-- Atlas Finance AI - Recommended Row Level Security (RLS) policies
+-- Status: NOT APPLIED.
 --
--- Context:
--- - Auth is managed by NestJS (not Supabase Auth).
--- - When RLS is enabled, the API must set the tenant context per request/transaction:
---     SET LOCAL app.current_user_id = '<authenticated-user-uuid>';
--- - Use DIRECT connection or a dedicated DB role; do not rely on Supabase anon/authenticated roles.
--- - Service/migration roles should bypass RLS (BYPASSRLS) or use a superuser for admin jobs.
-
--- ---------------------------------------------------------------------------
--- Helper (optional — create when enabling RLS)
--- ---------------------------------------------------------------------------
--- CREATE OR REPLACE FUNCTION app_current_user_id()
--- RETURNS uuid
--- LANGUAGE sql
--- STABLE
--- AS $$
---   SELECT NULLIF(current_setting('app.current_user_id', true), '')::uuid;
+-- These policies are intentionally documentation-only for now.
+-- Do not execute this file until the backend is ready to set an application
+-- tenant context for every database transaction.
+--
+-- Project assumptions:
+-- - Authentication is managed by NestJS, not Supabase Auth.
+-- - Supabase Auth, auth.uid(), auth.jwt(), anon and authenticated roles are not
+--   part of the authorization model.
+-- - NestJS must set the user context per request/transaction before any query:
+--     select set_config('app.current_user_id', '<authenticated-user-uuid>', true);
+-- - RLS should only be enabled together with complete policies and tests.
+--
+-- Optional helper for future activation:
+--
+-- create or replace function public.app_current_user_id()
+-- returns uuid
+-- language sql
+-- stable
+-- as $$
+--   select nullif(current_setting('app.current_user_id', true), '')::uuid;
 -- $$;
 
 -- ---------------------------------------------------------------------------
--- users
+-- User
+-- Table: public.users
 -- ---------------------------------------------------------------------------
--- ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
--- ALTER TABLE public.users FORCE ROW LEVEL SECURITY;
 --
--- CREATE POLICY users_select_own
---   ON public.users FOR SELECT
---   USING (id = app_current_user_id() AND deleted_at IS NULL);
+-- alter table public.users enable row level security;
+-- alter table public.users force row level security;
 --
--- CREATE POLICY users_update_own
---   ON public.users FOR UPDATE
---   USING (id = app_current_user_id() AND deleted_at IS NULL)
---   WITH CHECK (id = app_current_user_id());
+-- create policy users_select_own
+--   on public.users
+--   for select
+--   using (
+--     id = public.app_current_user_id()
+--     and deleted_at is null
+--   );
 --
--- -- Inserts happen at registration before session context exists; restrict to service role.
--- CREATE POLICY users_insert_service
---   ON public.users FOR INSERT
---   WITH CHECK (current_user IN ('postgres', 'atlas_service'));
+-- create policy users_update_own
+--   on public.users
+--   for update
+--   using (
+--     id = public.app_current_user_id()
+--     and deleted_at is null
+--   )
+--   with check (
+--     id = public.app_current_user_id()
+--   );
+--
+-- User creation, password reset and administrative lifecycle operations should
+-- be performed by a trusted backend role, not by public client roles.
 
 -- ---------------------------------------------------------------------------
--- accounts
+-- Account
+-- Table: public.accounts
 -- ---------------------------------------------------------------------------
--- ALTER TABLE public.accounts ENABLE ROW LEVEL SECURITY;
--- ALTER TABLE public.accounts FORCE ROW LEVEL SECURITY;
 --
--- CREATE POLICY accounts_select_own
---   ON public.accounts FOR SELECT
---   USING (user_id = app_current_user_id() AND deleted_at IS NULL);
+-- alter table public.accounts enable row level security;
+-- alter table public.accounts force row level security;
 --
--- CREATE POLICY accounts_insert_own
---   ON public.accounts FOR INSERT
---   WITH CHECK (user_id = app_current_user_id());
+-- create policy accounts_select_own
+--   on public.accounts
+--   for select
+--   using (
+--     user_id = public.app_current_user_id()
+--     and deleted_at is null
+--   );
 --
--- CREATE POLICY accounts_update_own
---   ON public.accounts FOR UPDATE
---   USING (user_id = app_current_user_id() AND deleted_at IS NULL)
---   WITH CHECK (user_id = app_current_user_id());
+-- create policy accounts_insert_own
+--   on public.accounts
+--   for insert
+--   with check (
+--     user_id = public.app_current_user_id()
+--   );
 --
--- CREATE POLICY accounts_delete_own
---   ON public.accounts FOR DELETE
---   USING (user_id = app_current_user_id());
+-- create policy accounts_update_own
+--   on public.accounts
+--   for update
+--   using (
+--     user_id = public.app_current_user_id()
+--     and deleted_at is null
+--   )
+--   with check (
+--     user_id = public.app_current_user_id()
+--   );
+--
+-- create policy accounts_delete_own
+--   on public.accounts
+--   for delete
+--   using (
+--     user_id = public.app_current_user_id()
+--   );
 
 -- ---------------------------------------------------------------------------
--- transactions
+-- Transaction
+-- Table: public.transactions
 -- ---------------------------------------------------------------------------
--- ALTER TABLE public.transactions ENABLE ROW LEVEL SECURITY;
--- ALTER TABLE public.transactions FORCE ROW LEVEL SECURITY;
 --
--- CREATE POLICY transactions_select_own
---   ON public.transactions FOR SELECT
---   USING (user_id = app_current_user_id() AND deleted_at IS NULL);
+-- alter table public.transactions enable row level security;
+-- alter table public.transactions force row level security;
 --
--- CREATE POLICY transactions_insert_own
---   ON public.transactions FOR INSERT
---   WITH CHECK (
---     user_id = app_current_user_id()
---     AND EXISTS (
---       SELECT 1 FROM public.accounts a
---       WHERE a.id = account_id
---         AND a.user_id = app_current_user_id()
---         AND a.deleted_at IS NULL
+-- create policy transactions_select_own
+--   on public.transactions
+--   for select
+--   using (
+--     user_id = public.app_current_user_id()
+--     and deleted_at is null
+--   );
+--
+-- create policy transactions_insert_own
+--   on public.transactions
+--   for insert
+--   with check (
+--     user_id = public.app_current_user_id()
+--     and exists (
+--       select 1
+--       from public.accounts a
+--       where a.id = account_id
+--         and a.user_id = public.app_current_user_id()
+--         and a.deleted_at is null
 --     )
 --   );
 --
--- CREATE POLICY transactions_update_own
---   ON public.transactions FOR UPDATE
---   USING (user_id = app_current_user_id() AND deleted_at IS NULL)
---   WITH CHECK (user_id = app_current_user_id());
+-- create policy transactions_update_own
+--   on public.transactions
+--   for update
+--   using (
+--     user_id = public.app_current_user_id()
+--     and deleted_at is null
+--   )
+--   with check (
+--     user_id = public.app_current_user_id()
+--   );
 --
--- CREATE POLICY transactions_delete_own
---   ON public.transactions FOR DELETE
---   USING (user_id = app_current_user_id());
+-- create policy transactions_delete_own
+--   on public.transactions
+--   for delete
+--   using (
+--     user_id = public.app_current_user_id()
+--   );
 
 -- ---------------------------------------------------------------------------
--- goals
+-- Goal
+-- Table: public.goals
 -- ---------------------------------------------------------------------------
--- ALTER TABLE public.goals ENABLE ROW LEVEL SECURITY;
--- ALTER TABLE public.goals FORCE ROW LEVEL SECURITY;
 --
--- CREATE POLICY goals_select_own
---   ON public.goals FOR SELECT
---   USING (user_id = app_current_user_id() AND deleted_at IS NULL);
+-- alter table public.goals enable row level security;
+-- alter table public.goals force row level security;
 --
--- CREATE POLICY goals_insert_own
---   ON public.goals FOR INSERT
---   WITH CHECK (user_id = app_current_user_id());
+-- create policy goals_select_own
+--   on public.goals
+--   for select
+--   using (
+--     user_id = public.app_current_user_id()
+--     and deleted_at is null
+--   );
 --
--- CREATE POLICY goals_update_own
---   ON public.goals FOR UPDATE
---   USING (user_id = app_current_user_id() AND deleted_at IS NULL)
---   WITH CHECK (user_id = app_current_user_id());
+-- create policy goals_insert_own
+--   on public.goals
+--   for insert
+--   with check (
+--     user_id = public.app_current_user_id()
+--   );
 --
--- CREATE POLICY goals_delete_own
---   ON public.goals FOR DELETE
---   USING (user_id = app_current_user_id());
+-- create policy goals_update_own
+--   on public.goals
+--   for update
+--   using (
+--     user_id = public.app_current_user_id()
+--     and deleted_at is null
+--   )
+--   with check (
+--     user_id = public.app_current_user_id()
+--   );
+--
+-- create policy goals_delete_own
+--   on public.goals
+--   for delete
+--   using (
+--     user_id = public.app_current_user_id()
+--   );
 
 -- ---------------------------------------------------------------------------
--- monthly_budgets (Budget)
+-- Budget
+-- Tables: public.monthly_budgets, public.budget_category_limits
 -- ---------------------------------------------------------------------------
--- ALTER TABLE public.monthly_budgets ENABLE ROW LEVEL SECURITY;
--- ALTER TABLE public.monthly_budgets FORCE ROW LEVEL SECURITY;
 --
--- CREATE POLICY monthly_budgets_select_own
---   ON public.monthly_budgets FOR SELECT
---   USING (user_id = app_current_user_id() AND deleted_at IS NULL);
+-- alter table public.monthly_budgets enable row level security;
+-- alter table public.monthly_budgets force row level security;
 --
--- CREATE POLICY monthly_budgets_insert_own
---   ON public.monthly_budgets FOR INSERT
---   WITH CHECK (user_id = app_current_user_id());
+-- create policy monthly_budgets_select_own
+--   on public.monthly_budgets
+--   for select
+--   using (
+--     user_id = public.app_current_user_id()
+--     and deleted_at is null
+--   );
 --
--- CREATE POLICY monthly_budgets_update_own
---   ON public.monthly_budgets FOR UPDATE
---   USING (user_id = app_current_user_id() AND deleted_at IS NULL)
---   WITH CHECK (user_id = app_current_user_id());
+-- create policy monthly_budgets_insert_own
+--   on public.monthly_budgets
+--   for insert
+--   with check (
+--     user_id = public.app_current_user_id()
+--   );
 --
--- CREATE POLICY monthly_budgets_delete_own
---   ON public.monthly_budgets FOR DELETE
---   USING (user_id = app_current_user_id());
+-- create policy monthly_budgets_update_own
+--   on public.monthly_budgets
+--   for update
+--   using (
+--     user_id = public.app_current_user_id()
+--     and deleted_at is null
+--   )
+--   with check (
+--     user_id = public.app_current_user_id()
+--   );
 --
--- -- Child limits inherit budget ownership
--- ALTER TABLE public.budget_category_limits ENABLE ROW LEVEL SECURITY;
--- ALTER TABLE public.budget_category_limits FORCE ROW LEVEL SECURITY;
+-- create policy monthly_budgets_delete_own
+--   on public.monthly_budgets
+--   for delete
+--   using (
+--     user_id = public.app_current_user_id()
+--   );
 --
--- CREATE POLICY budget_category_limits_all_own
---   ON public.budget_category_limits FOR ALL
---   USING (user_id = app_current_user_id())
---   WITH CHECK (user_id = app_current_user_id());
+-- alter table public.budget_category_limits enable row level security;
+-- alter table public.budget_category_limits force row level security;
+--
+-- create policy budget_category_limits_select_own
+--   on public.budget_category_limits
+--   for select
+--   using (
+--     user_id = public.app_current_user_id()
+--   );
+--
+-- create policy budget_category_limits_insert_own
+--   on public.budget_category_limits
+--   for insert
+--   with check (
+--     user_id = public.app_current_user_id()
+--     and exists (
+--       select 1
+--       from public.monthly_budgets b
+--       where b.id = budget_id
+--         and b.user_id = public.app_current_user_id()
+--         and b.deleted_at is null
+--     )
+--   );
+--
+-- create policy budget_category_limits_update_own
+--   on public.budget_category_limits
+--   for update
+--   using (
+--     user_id = public.app_current_user_id()
+--   )
+--   with check (
+--     user_id = public.app_current_user_id()
+--   );
+--
+-- create policy budget_category_limits_delete_own
+--   on public.budget_category_limits
+--   for delete
+--   using (
+--     user_id = public.app_current_user_id()
+--   );
