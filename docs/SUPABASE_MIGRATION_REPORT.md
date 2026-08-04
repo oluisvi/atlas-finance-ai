@@ -1,444 +1,286 @@
-# Atlas Finance AI — Supabase Migration Report
+# Atlas Finance AI - Supabase Migration Report
 
 **Project ref:** `mzqipbkktbpdcasfvzny`  
-**Migration:** `20260624000100_init_supabase_schema`  
-**Generated:** 2025-06-25 (atualizado)  
-**Status:** Migration aplicada no Supabase (Codex) — verificação ao vivo **pendente** de credenciais DB
+**Project name:** Atlas Finance AI  
+**Database:** Supabase PostgreSQL remoto  
+**Postgres engine:** 17  
+**Schema source:** `prisma/schema.prisma` + `prisma/migrations/20260624000100_init_supabase_schema/migration.sql`  
+**Updated:** 2026-08-04  
+**Status:** Schema aplicado e verificado no Supabase remoto via MCP.
 
 ---
 
-## 1. Resumo executivo
+## 1. Executive Summary
 
-O Atlas Finance AI foi configurado para usar **Supabase PostgreSQL remoto** como banco principal, mantendo:
+O Atlas Finance AI foi adaptado para usar Supabase PostgreSQL remoto como banco principal, mantendo:
 
-- **Prisma** como ORM e gerenciador de migrations
-- **NestJS** como camada de autenticação e regras de negócio (sem Supabase Auth)
-- Schema e entidades **inalterados** em relação ao design original
+- Prisma como ORM e ferramenta de migrations.
+- NestJS como camada de autenticacao, autorizacao e regras de negocio.
+- Auth propria da aplicacao, sem Supabase Auth.
+- Sem Supabase Edge Functions.
+- Sem alteracao de entidades ou regras financeiras.
 
-A migration inicial cria **25 tabelas**, **39 enums**, **84 índices** e **49 foreign keys** no schema `public`.
+O catalogo remoto foi verificado com sucesso:
 
-### Estado desta sessão
+| Item | Resultado ao vivo |
+|---|---:|
+| Tabelas em `public` | 25 |
+| Enums em `public` | 39 |
+| Foreign keys | 49 |
+| Indices totais Postgres | 109 |
+| Primary key indexes | 25 |
+| Unique indexes | 14 |
+| Non-unique indexes | 70 |
+| Tabelas com RLS ligado | 0 |
+| Tabelas com RLS desligado | 25 |
 
-| Item | Status |
+Observacao critica: o schema foi aplicado no Supabase via MCP, nao via `prisma migrate deploy`. Portanto, a tabela `_prisma_migrations` nao existe no banco remoto no momento da verificacao. Antes de usar Prisma Migrate em CI/producao, e necessario alinhar o historico de migrations do Prisma com o estado real do banco.
+
+---
+
+## 2. Arquivos Gerados ou Atualizados
+
+| Arquivo | Finalidade |
 |---|---|
-| `.env` criado (`npm run setup:env`) | ✅ JWT secrets gerados |
-| Senha DB no `.env` | ⏳ Ainda `<DB_PASSWORD>` — precisa preencher |
-| Supabase MCP (`.mcp.json`) | ✅ Configurado — requer OAuth no Cursor |
-| Supabase CLI login | ⏳ Não autenticado nesta máquina |
-| Catálogo esperado (migration) | ✅ `docs/expected-catalog-from-migration.json` |
-| Catálogo ao vivo (Postgres) | ⏳ `npm run db:verify-catalog` após preencher `.env` |
-
-Para revalidar o catálogo ao vivo no Supabase:
-
-```bash
-npm run setup:env          # se .env ainda não existir
-# Edite .env: DIRECT_URL + DATABASE_URL com senha real
-npm run db:verify-catalog
-```
-
-Ou autentique o **Supabase MCP** no Cursor (recarregue a janela após OAuth) e peça ao agente para rodar `execute_sql`.
-
-O script grava um snapshot em `docs/supabase-catalog-snapshot.json`.
+| `.env.example` | Exemplo de variaveis para Supabase remoto, Prisma, JWT, Redis e FastAPI |
+| `prisma.config.ts` | Configuracao Prisma 7 usando `DIRECT_URL`/`DATABASE_URL` |
+| `package.json` | Scripts Prisma e scripts de verificacao |
+| `package-lock.json` | Lockfile das dependencias instaladas |
+| `prisma/migrations/20260624000100_init_supabase_schema/migration.sql` | Migration inicial gerada pelo Prisma |
+| `prisma/migrations/migration_lock.toml` | Lock de provider Prisma |
+| `supabase/config.toml` | Config local apontando para o projeto Supabase remoto |
+| `supabase/rls/recommended_policies.sql` | Politicas RLS recomendadas, nao aplicadas |
+| `docs/expected-catalog-from-migration.json` | Catalogo esperado extraido da migration |
+| `docs/SUPABASE_SETUP.md` | Instrucoes operacionais de conexao e setup |
+| `docs/SUPABASE_MIGRATION_REPORT.md` | Este relatorio |
+| `docs/DATABASE_REVIEW.md` | Revisao tecnica pos-migration |
 
 ---
 
-## 2. Configuração de conexão
+## 3. Connection Strategy
 
-### DATABASE_URL (runtime NestJS)
+### `DATABASE_URL`
 
-Use o **Transaction Pooler** do Supabase (porta **6543**, `pgbouncer=true`):
+Usada pelo runtime NestJS/Prisma Client.
 
 ```env
 DATABASE_URL="postgresql://postgres.mzqipbkktbpdcasfvzny:<DB_PASSWORD>@aws-0-<REGION>.pooler.supabase.com:6543/postgres?pgbouncer=true&connection_limit=1&sslmode=require"
 ```
 
-- Usado pelo NestJS em produção/desenvolvimento
-- Compatível com `@prisma/adapter-pg` e pooler
-- **Não** usar para `prisma migrate`
+Recomendacao:
 
-### DIRECT_URL (migrations e introspecção)
+- Usar o Transaction Pooler do Supabase.
+- Manter `connection_limit` conservador por instancia da API.
+- Nao usar esta URL para migrations.
 
-Use a **Direct Connection** (porta **5432**):
+### `DIRECT_URL`
+
+Usada para migrations, introspeccao e verificacoes administrativas.
 
 ```env
 DIRECT_URL="postgresql://postgres:<DB_PASSWORD>@db.mzqipbkktbpdcasfvzny.supabase.co:5432/postgres?sslmode=require"
 ```
 
-- Usado por `prisma migrate deploy`, `prisma db pull`, scripts de verificação
-- Referenciado em `prisma.config.ts` como datasource principal
+Recomendacao:
 
-### Variáveis auxiliares
-
-| Variável | Uso |
-|---|---|
-| `SUPABASE_PROJECT_REF` | Identificador do projeto |
-| `SUPABASE_URL` | URL da API Supabase (não usada para auth neste projeto) |
-| `JWT_*` | Auth gerenciada pelo NestJS |
-| `REDIS_URL` | Cache/filas (serviço separado) |
+- Usar em `prisma migrate deploy`.
+- Guardar apenas em `.env`, secrets de CI/CD ou cofre de segredos.
+- Nunca expor no frontend.
 
 ---
 
-## 3. Compatibilidade Prisma × Supabase PostgreSQL
+## 4. Prisma Compatibility
 
-| Aspecto | Status | Observação |
+| Aspecto | Status | Nota |
 |---|---|---|
-| PostgreSQL 15+ (Supabase) | ✅ Compatível | Enums nativos, UUID, JSONB, TIMESTAMPTZ |
-| `DECIMAL(19,4)` monetário | ✅ Compatível | Precisão fixa, sem float |
-| UUID como PK | ✅ Compatível | `@db.Uuid` |
-| Soft delete (`deleted_at`) | ✅ Compatível | Nullable TIMESTAMPTZ |
-| Índices compostos | ✅ Compatível | Alinhados ao schema Prisma |
-| Foreign keys `ON DELETE RESTRICT` | ✅ Compatível | Integridade preservada |
-| Transaction pooler + Prisma | ✅ Compatível | Via `DATABASE_URL` com pgbouncer |
-| Supabase Auth / Edge Functions | ⛔ Não utilizados | Conforme arquitetura |
-| RLS | ⏸ Não ativado | Políticas preparadas em `supabase/rls/recommended_policies.sql` |
+| PostgreSQL remoto | OK | Supabase Postgres 17 |
+| UUID como PK | OK | Todas as PKs usam `UUID`; geracao fica no Prisma/app |
+| Enums nativos | OK | 39 enums criados e todos utilizados |
+| JSONB | OK | Usado para metadata, audit e payloads |
+| TIMESTAMPTZ | OK | Timestamps padronizados |
+| DATE | OK | Datas financeiras sem hora |
+| Decimal monetario | OK | `DECIMAL(19,4)` para valores financeiros |
+| Pooler | OK | Runtime deve usar `DATABASE_URL` pooler |
+| Direct connection | OK | Migrations devem usar `DIRECT_URL` |
+| Supabase Auth | Nao usado | Conforme arquitetura |
+| Edge Functions | Nao usado | Conforme arquitetura |
+| RLS | Preparado, nao ativado | Conforme pedido |
+
+Risco operacional: como a aplicacao do DDL foi feita pelo MCP, o catalogo existe, mas o historico Prisma ainda precisa ser reconciliado antes do primeiro `prisma migrate deploy` contra este banco.
 
 ---
 
-## 4. Tabelas criadas (25)
+## 5. Tabelas Criadas
 
-| Tabela | Domínio |
+As 25 tabelas verificadas em `public`:
+
+| Tabela | Dominio |
 |---|---|
-| `users` | Autenticação / perfil |
-| `user_preferences` | Preferências do usuário |
-| `auth_sessions` | Refresh tokens (hash) |
-| `password_reset_tokens` | Recuperação de senha |
+| `users` | Usuario, login e perfil |
+| `user_preferences` | Preferencias do usuario |
+| `auth_sessions` | Sessoes e refresh tokens |
+| `password_reset_tokens` | Recuperacao de senha |
 | `accounts` | Contas financeiras |
-| `categories` | Categorias (global + custom) |
-| `transactions` | Receitas, despesas, ajustes, transferências |
-| `transfers` | Transferências entre contas |
-| `monthly_budgets` | Orçamento mensal |
+| `categories` | Categorias globais e customizadas |
+| `transactions` | Receitas, despesas, ajustes e transferencias |
+| `transfers` | Transferencias entre contas |
+| `monthly_budgets` | Orcamentos mensais |
 | `budget_category_limits` | Limites por categoria |
 | `goals` | Metas financeiras |
-| `goal_contributions` | Contribuições/retiradas de metas |
-| `emergency_fund_plans` | Reserva de emergência |
-| `recurring_transactions` | Recorrências / assinaturas |
-| `notifications` | Alertas in-app |
+| `goal_contributions` | Contribuicoes de metas |
+| `emergency_fund_plans` | Plano de reserva de emergencia |
+| `recurring_transactions` | Transacoes recorrentes |
+| `notifications` | Notificacoes |
 | `financial_scores` | Financial Health Score |
-| `financial_score_components` | Componentes explicáveis do score |
+| `financial_score_components` | Componentes do score |
 | `financial_insights` | Insights financeiros |
-| `insight_generation_runs` | Execuções de geração de insights |
-| `import_batches` | Lotes de importação CSV/OFX |
-| `import_items` | Itens parseados de importação |
-| `audit_logs` | Auditoria append-only |
-| `account_balance_snapshots` | Snapshots diários de saldo |
+| `insight_generation_runs` | Execucoes de IA |
+| `import_batches` | Lotes de importacao CSV/OFX |
+| `import_items` | Itens importados |
+| `audit_logs` | Auditoria |
+| `account_balance_snapshots` | Snapshots de saldo |
 | `monthly_financial_summaries` | Agregados mensais |
-| `monthly_category_summaries` | Agregados por categoria/mês |
-
-Tabela de controle Prisma: `_prisma_migrations`
+| `monthly_category_summaries` | Agregados mensais por categoria |
 
 ---
 
-## 5. Enums criados (39)
+## 6. Enums Criados
 
-| Enum | Valores |
-|---|---|
-| `user_status` | active, pending_verification, locked, disabled, deleted |
-| `dashboard_period_default` | current_month, last_30_days, current_year |
-| `auth_session_status` | active, revoked, expired, rotated |
-| `account_type` | checking, digital, wallet, investment, card |
-| `account_status` | active, archived, deleted |
-| `category_type` | income, expense, both |
-| `category_status` | active, archived, deleted |
-| `transaction_type` | income, expense, transfer_in, transfer_out, adjustment |
-| `transaction_status` | pending, confirmed, ignored, deleted |
-| `transaction_source` | manual, csv, ofx, recurring, system |
-| `transfer_status` | confirmed, deleted |
-| `monthly_budget_status` | draft, active, closed, deleted |
-| `goal_type` | generic, emergency_fund, travel, vehicle, property, retirement, purchase |
-| `goal_priority` | low, medium, high |
-| `goal_status` | active, paused, completed, archived, deleted |
-| `goal_contribution_type` | contribution, withdrawal, adjustment |
-| `emergency_fund_calculation_mode` | manual, auto_from_categories |
-| `recurrence_kind` | weekly, monthly, yearly |
-| `recurring_transaction_type` | income, expense |
-| `recurring_transaction_status` | active, paused, ended, deleted |
-| `notification_type` | budget_80, budget_100, goal_reached, recurring_due, score_changed, insight_available, security |
-| `notification_severity` | info, warning, critical, success |
-| `notification_channel` | in_app, email, push |
-| `notification_status` | pending, sent, read, dismissed, failed |
-| `financial_score_classification` | critical, attention, good, excellent |
-| `financial_score_component_type` | savings_rate, budget_adherence, emergency_fund, goal_progress, net_worth_evolution |
-| `financial_insight_type` | spending_increase, budget_risk, subscription_saving, goal_projection, cashflow_summary, score_recommendation |
-| `financial_insight_source` | rule_engine, ai_service, hybrid |
-| `financial_insight_severity` | info, opportunity, warning, critical |
-| `financial_insight_status` | new, seen, dismissed, archived |
-| `insight_generation_trigger` | manual, scheduled, transaction_created, month_closed, score_updated |
-| `run_status` | queued, running, completed, failed, cancelled |
-| `import_source_type` | csv, ofx |
-| `import_batch_status` | uploaded, parsed, review_required, imported, failed, cancelled |
-| `import_item_inferred_type` | income, expense, unknown |
-| `import_item_status` | pending_review, ready, imported, duplicate, ignored, failed |
-| `audit_event_type` | login_success, login_failed, logout, password_reset_requested, password_changed, entity_created, entity_updated, entity_deleted, import_completed, score_calculated, insight_generated, security_event |
-| `risk_level` | low, medium, high, critical |
-| `category_summary_type` | income, expense |
+Foram verificados 39 enums, todos com pelo menos uma coluna usando o tipo:
 
-Todos os enums estão referenciados por colunas no schema Prisma. Nenhum enum órfão identificado.
+`account_status`, `account_type`, `audit_event_type`, `auth_session_status`, `category_status`, `category_summary_type`, `category_type`, `dashboard_period_default`, `emergency_fund_calculation_mode`, `financial_insight_severity`, `financial_insight_source`, `financial_insight_status`, `financial_insight_type`, `financial_score_classification`, `financial_score_component_type`, `goal_contribution_type`, `goal_priority`, `goal_status`, `goal_type`, `import_batch_status`, `import_item_inferred_type`, `import_item_status`, `import_source_type`, `insight_generation_trigger`, `monthly_budget_status`, `notification_channel`, `notification_severity`, `notification_status`, `notification_type`, `recurrence_kind`, `recurring_transaction_status`, `recurring_transaction_type`, `risk_level`, `run_status`, `transaction_source`, `transaction_status`, `transaction_type`, `transfer_status`, `user_status`.
+
+Nenhum enum orfao foi identificado.
 
 ---
 
-## 6. Índices criados (50)
+## 7. Indices Criados
 
-### users
-- `users_email_normalized_key` (UNIQUE)
-- `users_status_idx`
-- `users_deleted_at_idx`
+O Postgres reporta 109 indices no total:
 
-### user_preferences
-- `user_preferences_user_id_key` (UNIQUE)
+- 25 indices de primary key.
+- 14 indices unique.
+- 70 indices non-unique.
 
-### auth_sessions
-- `auth_sessions_user_id_status_idx`
-- `auth_sessions_refresh_token_hash_idx`
-- `auth_sessions_expires_at_idx`
+A migration Prisma tambem reporta 84 indices/constraints de aplicacao esperados, pois essa contagem agrupa indices explicitos e unique constraints do arquivo SQL.
 
-### password_reset_tokens
-- `password_reset_tokens_token_hash_idx`
-- `password_reset_tokens_user_id_created_at_idx`
-- `password_reset_tokens_expires_at_idx`
+Os indices mais importantes para o MVP cobrem:
 
-### accounts
-- `accounts_user_id_status_idx`
-- `accounts_user_id_type_idx`
-- `accounts_deleted_at_idx`
-
-### categories
-- `categories_user_id_status_idx`
-- `categories_parent_id_idx`
-- `categories_is_default_idx`
-- `categories_deleted_at_idx`
-- `categories_user_id_type_name_key` (UNIQUE)
-
-### transactions
-- `transactions_import_item_id_key` (UNIQUE)
-- `transactions_user_id_transaction_date_idx`
-- `transactions_user_id_type_transaction_date_idx`
-- `transactions_user_id_account_id_transaction_date_idx`
-- `transactions_user_id_category_id_transaction_date_idx`
-- `transactions_user_id_status_transaction_date_idx`
-- `transactions_fingerprint_idx`
-- `transactions_transfer_id_idx`
-- `transactions_recurring_transaction_id_idx`
-- `transactions_deleted_at_idx`
-
-### transfers
-- `transfers_user_id_transfer_date_idx`
-- `transfers_from_account_id_idx`
-- `transfers_to_account_id_idx`
-- `transfers_deleted_at_idx`
-
-### monthly_budgets
-- `monthly_budgets_user_id_month_status_idx`
-- `monthly_budgets_deleted_at_idx`
-- `monthly_budgets_user_id_month_key` (UNIQUE)
-
-### budget_category_limits
-- `budget_category_limits_user_id_category_id_idx`
-- `budget_category_limits_budget_id_category_id_key` (UNIQUE)
-
-### goals
-- `goals_user_id_status_idx`
-- `goals_user_id_type_idx`
-- `goals_deleted_at_idx`
-
-### goal_contributions
-- `goal_contributions_user_id_goal_id_contribution_date_idx`
-- `goal_contributions_transaction_id_idx`
-- `goal_contributions_deleted_at_idx`
-
-### emergency_fund_plans
-- `emergency_fund_plans_goal_id_key` (UNIQUE)
-- `emergency_fund_plans_user_id_idx`
-
-### recurring_transactions
-- `recurring_transactions_user_id_status_idx`
-- `recurring_transactions_user_id_next_occurrence_date_idx`
-- `recurring_transactions_account_id_idx`
-- `recurring_transactions_category_id_idx`
-- `recurring_transactions_deleted_at_idx`
-
-### notifications
-- `notifications_user_id_status_created_at_idx`
-- `notifications_user_id_type_idx`
-- `notifications_scheduled_for_idx`
-
-### financial_scores
-- `financial_scores_user_id_calculated_at_idx`
-- `financial_scores_user_id_period_start_period_end_idx`
-- `financial_scores_user_id_period_start_period_end_calculatio_key` (UNIQUE)
-
-### financial_score_components
-- `financial_score_components_user_id_idx`
-- `financial_score_components_financial_score_id_component_key` (UNIQUE)
-
-### financial_insights
-- `financial_insights_user_id_status_created_at_idx`
-- `financial_insights_user_id_type_period_start_period_end_idx`
-- `financial_insights_generated_by_run_id_idx`
-
-### insight_generation_runs
-- `insight_generation_runs_user_id_status_created_at_idx`
-- `insight_generation_runs_user_id_period_start_period_end_idx`
-
-### import_batches
-- `import_batches_user_id_created_at_idx`
-- `import_batches_file_hash_idx`
-- `import_batches_status_idx`
-- `import_batches_user_id_account_id_file_hash_key` (UNIQUE)
-
-### import_items
-- `import_items_import_batch_id_status_idx`
-- `import_items_user_id_fingerprint_idx`
-- `import_items_matched_transaction_id_idx`
-- `import_items_suggested_category_id_idx`
-- `import_items_import_batch_id_fingerprint_key` (UNIQUE)
-
-### audit_logs
-- `audit_logs_user_id_created_at_idx`
-- `audit_logs_actor_user_id_created_at_idx`
-- `audit_logs_event_type_created_at_idx`
-- `audit_logs_entity_type_entity_id_idx`
-
-### account_balance_snapshots
-- `account_balance_snapshots_user_id_snapshot_date_idx`
-- `account_balance_snapshots_user_id_account_id_snapshot_date_idx`
-- `account_balance_snapshots_account_id_snapshot_date_key` (UNIQUE)
-
-### monthly_financial_summaries
-- `monthly_financial_summaries_user_id_month_idx`
-- `monthly_financial_summaries_user_id_month_key` (UNIQUE)
-
-### monthly_category_summaries
-- `monthly_category_summaries_user_id_month_idx`
-- `monthly_category_summaries_user_id_category_id_month_idx`
-- `monthly_category_summaries_user_id_category_id_month_type_key` (UNIQUE)
+- Login por `users.email_normalized`.
+- Listagens por `user_id`.
+- Transacoes por usuario, tipo, status, conta, categoria e periodo.
+- Dashboards por agregados mensais.
+- Score financeiro por usuario e periodo.
+- Insights por usuario, tipo, status e periodo.
+- Importacao por batch, fingerprint e hash de arquivo.
+- Auditoria por usuario, ator, evento e entidade.
 
 ---
 
-## 7. Foreign keys criadas (48)
+## 8. Foreign Keys
 
-Todas as FKs usam `ON DELETE RESTRICT ON UPDATE CASCADE`, preservando integridade referencial.
+Foram verificadas 49 foreign keys. Todas usam:
 
-Principais relações:
-
-- `users` ← auth, accounts, transactions, budgets, goals, imports, audit, agregados
-- `accounts` ← transactions, transfers, recurring, imports, snapshots
-- `categories` ← transactions, budgets, imports, summaries (hierarquia via `parent_id`)
-- `monthly_budgets` ← `budget_category_limits`
-- `goals` ← contributions, emergency_fund_plans
-- `transfers` ← transactions (pareadas transfer_in/out)
-- `import_batches` ← import_items → transactions
-- `financial_scores` ← score_components
-- `insight_generation_runs` ← financial_insights
-
----
-
-## 8. Campos monetários
-
-Todos os valores financeiros usam **`DECIMAL(19,4)`** ou **`DECIMAL(9,4)`** / **`DECIMAL(5,4)`** para taxas:
-
-| Tabela | Colunas monetárias |
-|---|---|
-| accounts | initial_balance, current_balance |
-| transactions | amount |
-| transfers | amount |
-| monthly_budgets | total_limit |
-| budget_category_limits | limit_amount |
-| goals | target_amount, current_amount |
-| goal_contributions | amount |
-| emergency_fund_plans | essential_monthly_expense |
-| recurring_transactions | amount |
-| financial_scores | savings_rate, expense_ratio, emergency_fund_months, budget_adherence_rate, goal_progress_rate, net_worth_delta |
-| financial_score_components | raw_value, weight |
-| financial_insights | confidence |
-| import_items | amount |
-| account_balance_snapshots | balance |
-| monthly_financial_summaries | total_income, total_expense, net_cashflow, savings_rate, total_balance |
-| monthly_category_summaries | total_amount |
-
-✅ Nenhum campo monetário usa `float`/`double precision`.
-
----
-
-## 9. Soft delete
-
-Entidades com `deleted_at`:
-
-| Tabela | Soft delete |
-|---|---|
-| users | ✅ |
-| accounts | ✅ |
-| categories | ✅ |
-| transactions | ✅ |
-| transfers | ✅ |
-| monthly_budgets | ✅ |
-| goals | ✅ |
-| goal_contributions | ✅ |
-| recurring_transactions | ✅ |
-
-Entidades **sem** `deleted_at` (por design): auth_sessions, password_reset_tokens, notifications, audit_logs, agregados, imports (status enum), financial_scores/insights.
-
-Índices em `deleted_at` existem nas tabelas principais com soft delete.
-
----
-
-## 10. Row Level Security (RLS)
-
-| Item | Status |
-|---|---|
-| RLS ativado | ❌ Não (intencional) |
-| Políticas geradas | ✅ `supabase/rls/recommended_policies.sql` |
-| Entidades cobertas | users, accounts, transactions, goals, monthly_budgets (+ budget_category_limits) |
-
-**Nota:** Como a auth é NestJS, ao ativar RLS no futuro a API deve executar `SET LOCAL app.current_user_id = '<uuid>'` por transação.
-
----
-
-## 11. Problemas encontrados
-
-| # | Severidade | Problema | Ação |
-|---|---|---|---|
-| 1 | Info | `.env` local sem senha DB | Rodar `npm run setup:env` e preencher `<DB_PASSWORD>` + `<REGION>` |
-| 2 | Baixa | `import_items.account_id` sem índice dedicado | Confirmado via `expected-catalog-from-migration.json` |
-| 3 | Baixa | `import_batches.account_id` sem índice dedicado | Coberto parcialmente pelo UNIQUE composto |
-| 4 | Info | `account_type.card` existe no enum mas cartão está fora do MVP | Reservado para evolução; sem impacto imediato |
-| 5 | Info | Índices parciais (`WHERE deleted_at IS NULL`) não criados | Recomendado apenas com volume alto (ver DATABASE_REVIEW.md) |
-
-Nenhum bloqueador estrutural identificado para iniciar o backend NestJS.
-
----
-
-## 12. Ajustes recomendados (não aplicados)
-
-1. Manter `.env` fora do git; usar secrets no CI/CD.
-2. Executar `npm run db:verify-catalog` após configurar `.env` para snapshot ao vivo.
-3. Usar `prisma migrate deploy` em CI com `DIRECT_URL`.
-4. Revisar `docs/DATABASE_REVIEW.md` antes de otimizações de performance.
-5. Ativar RLS somente se houver acesso direto ao PostgREST/Supabase client — não necessário para NestJS-only.
-
----
-
-## 13. Próximos passos
-
-1. ✅ Schema no Supabase remoto
-2. ⏭ Scaffold NestJS + PrismaModule
-3. ⏭ Seed de categorias padrão
-4. ⏭ Implementar AuthModule (JWT + Argon2)
-5. ⏭ CRUD de accounts e transactions
-
----
-
-## 14. Comandos úteis
-
-```bash
-# Validar schema
-npm run prisma:validate
-
-# Gerar client
-npm run prisma:generate
-
-# Aplicar migrations (usa DIRECT_URL via prisma.config.ts)
-npm run prisma:migrate:deploy
-
-# Verificar catálogo no Supabase
-npm run db:verify-catalog
+```sql
+ON DELETE RESTRICT ON UPDATE CASCADE
 ```
+
+Esse comportamento esta alinhado ao modelo financeiro: delecoes fisicas nao devem propagar perda de historico financeiro. O backend NestJS deve implementar arquivamento ou soft delete em cascata logica quando necessario.
+
+---
+
+## 9. Campos Monetarios
+
+Foram verificados 28 campos `numeric`.
+
+Padrao:
+
+- Valores financeiros: `DECIMAL(19,4)`.
+- Taxas e percentuais: `DECIMAL(9,4)`.
+- Confidence de insight: `DECIMAL(5,4)`.
+
+Nenhum campo monetario usa `float`, `double precision` ou `money`.
+
+---
+
+## 10. Soft Delete
+
+Tabelas com `deleted_at`:
+
+- `users`
+- `accounts`
+- `categories`
+- `transactions`
+- `transfers`
+- `monthly_budgets`
+- `goals`
+- `goal_contributions`
+- `recurring_transactions`
+
+Tabelas sem `deleted_at` usam status, historico append-only ou representam agregados/referencias operacionais.
+
+---
+
+## 11. RLS
+
+RLS nao foi ativado, conforme solicitado.
+
+Estado ao vivo:
+
+- 0 tabelas com RLS ligado.
+- 25 tabelas com RLS desligado.
+
+O Supabase Advisor classifica isso como erro de seguranca porque tabelas em `public` podem ser expostas via PostgREST/Data API dependendo das configuracoes do projeto. Como a arquitetura definida usa NestJS + Prisma e nao Supabase Auth, a recomendacao e:
+
+1. Nao usar anon key/service role no frontend.
+2. Manter acesso ao banco exclusivamente pelo backend.
+3. Ativar RLS futuramente apenas com politicas baseadas no contexto da aplicacao.
+
+Politicas recomendadas foram geradas em:
+
+```text
+supabase/rls/recommended_policies.sql
+```
+
+As politicas usam o padrao futuro:
+
+```sql
+SET LOCAL app.current_user_id = '<authenticated-user-uuid>';
+```
+
+---
+
+## 12. Problemas Encontrados
+
+| Severidade | Problema | Impacto | Acao recomendada |
+|---|---|---|---|
+| Alta operacional | `_prisma_migrations` nao existe no remoto | `prisma migrate deploy` pode tentar reaplicar objetos ja existentes | Alinhar historico Prisma antes do primeiro deploy via CI |
+| Media | RLS desligado em `public` | Seguro apenas se acesso direto via Supabase Data API nao for usado | Manter acesso via NestJS ou ativar RLS futuramente |
+| Media | Advisors indicam FKs sem covering index | Pode afetar joins/deletes por FK em escala | Avaliar indices adicionais em migration futura |
+| Baixa | Indices ainda aparecem como unused | Banco esta vazio; isso e esperado no MVP | Reavaliar apos trafego real |
+| Baixa | UUID sem default DB-side | Inserts fora do Prisma exigem UUID explicito | Aceitavel se Prisma for a unica camada de escrita |
+
+---
+
+## 13. Recomendacoes
+
+Antes do commit:
+
+- Commitar os arquivos locais de configuracao, migration e docs.
+- Nao commitar `.env`.
+- Registrar que o schema remoto esta criado, mas a tabela `_prisma_migrations` precisa ser reconciliada.
+
+Antes do primeiro deploy backend:
+
+- Preencher `DATABASE_URL` e `DIRECT_URL` em secrets.
+- Rodar `prisma validate`.
+- Decidir a estrategia de alinhamento do Prisma Migrate:
+  - recriar o banco via `prisma migrate deploy`, ou
+  - marcar a migration como aplicada com `prisma migrate resolve --applied`, usando `DIRECT_URL`.
+
+Antes de producao:
+
+- Revisar exposicao da Data API no Supabase.
+- Ativar RLS somente com politicas completas e testadas.
+- Implementar filtro padrao de `deleted_at IS NULL` no Prisma/NestJS.
+

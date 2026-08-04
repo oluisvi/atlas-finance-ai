@@ -1,362 +1,371 @@
-# Atlas Finance AI — Database Review
+# Atlas Finance AI - Database Review
 
 **Project ref:** `mzqipbkktbpdcasfvzny`  
-**Schema version:** `20260624000100_init_supabase_schema`  
-**Generated:** 2025-06-25  
-**Escopo:** Revisão pós-migration — recomendações apenas (schema **não alterado**)
+**Schema:** `20260624000100_init_supabase_schema`  
+**Updated:** 2026-08-04  
+**Scope:** Revisao pos-migration no Supabase remoto. Recomendacoes apenas; nenhuma alteracao automatica no schema.
 
 ---
 
-## 1. Metodologia
+## 1. Metodo
 
-Esta revisão analisa:
+Foram analisados:
 
+- `docs/PRD.md`
+- `docs/DATABASE.md`
+- `docs/ARCHITECTURE.md`
 - `prisma/schema.prisma`
 - `prisma/migrations/20260624000100_init_supabase_schema/migration.sql`
-- `docs/DATABASE.md` e `docs/ARCHITECTURE.md`
+- Catalogo remoto do Supabase via MCP
+- Supabase Security Advisor
+- Supabase Performance Advisor
 
-Para validação ao vivo no Supabase remoto:
+Validacoes executadas:
 
-```bash
-cp .env.example .env
-# Preencha DIRECT_URL
-npm run db:verify-catalog
-```
-
-O script detecta FKs sem índice, status RLS, colunas monetárias e soft delete no catálogo real.
+- `npm.cmd run prisma:validate`
+- `npm.cmd run db:expected-catalog`
+- Consultas no catalogo remoto para tabelas, enums, indices, FKs, campos monetarios e RLS.
 
 ---
 
-## 2. Veredicto geral
+## 2. Resultado Geral
 
-| Critério | Avaliação |
+| Area | Resultado |
 |---|---|
-| Integridade referencial | ✅ Excelente — 48 FKs, todas RESTRICT |
-| Campos monetários | ✅ Correto — DECIMAL fixo, sem float |
-| Soft delete | ✅ Consistente nas entidades financeiras core |
-| Índices de consulta | ✅ Bem planejados para dashboard e listagens |
-| Multi-tenant (`user_id`) | ✅ Presente em todas as entidades financeiras |
-| Enums | ✅ Todos utilizados — nenhum órfão |
-| Preparação Supabase | ✅ Compatível — RLS preparado mas desligado |
-| Gargalos potenciais | ⚠️ Baixo risco no MVP; ver seção 6 |
+| Tabelas | OK: 25 tabelas criadas |
+| Enums | OK: 39 enums, todos utilizados |
+| Foreign keys | OK: 49 FKs |
+| Integridade referencial | OK: `ON DELETE RESTRICT` preserva historico financeiro |
+| Campos monetarios | OK: `DECIMAL`, sem float |
+| Soft delete | OK nas entidades core |
+| Indices | Bom para MVP, com melhorias futuras recomendadas |
+| RLS | Desligado conforme pedido, mas reportado pelo Supabase como risco se Data API for exposta |
+| Prisma Migrate | Atencao: `_prisma_migrations` nao existe no banco remoto |
 
-**Conclusão:** O banco está **pronto para desenvolvimento do backend NestJS**. As recomendações abaixo são melhorias incrementais, não correções urgentes.
+Veredicto: o banco esta estruturalmente pronto para desenvolvimento do backend NestJS, mas o historico Prisma precisa ser reconciliado antes de usar `prisma migrate deploy` contra este projeto remoto.
 
 ---
 
-## 3. Índices
+## 3. Indices Ausentes ou Melhoraveis
 
-### 3.1 Índices presentes e adequados
+O Performance Advisor do Supabase indicou foreign keys sem covering index:
 
-O schema cobre bem os padrões de acesso documentados na arquitetura:
+| Tabela | FK | Observacao |
+|---|---|---|
+| `budget_category_limits` | `category_id` | Existe indice `(user_id, category_id)`, mas a FK nao e prefixo do indice |
+| `goal_contributions` | `goal_id` | Existe indice `(user_id, goal_id, contribution_date)`, mas a FK nao e prefixo |
+| `import_batches` | `account_id` | Existe unique `(user_id, account_id, file_hash)`, mas a FK nao e prefixo |
+| `import_items` | `account_id` | Nao ha indice dedicado |
+| `monthly_category_summaries` | `category_id` | Existe indice `(user_id, category_id, month)`, mas a FK nao e prefixo |
+| `transactions` | `account_id` | Existe indice `(user_id, account_id, transaction_date)`, mas a FK nao e prefixo |
+| `transactions` | `category_id` | Existe indice `(user_id, category_id, transaction_date)`, mas a FK nao e prefixo |
 
-| Padrão de query | Índice correspondente |
-|---|---|
-| Transações por usuário + período | `transactions_user_id_transaction_date_idx` |
-| Transações por conta + período | `transactions_user_id_account_id_transaction_date_idx` |
-| Transações por categoria + período | `transactions_user_id_category_id_transaction_date_idx` |
-| Dashboard mensal | `monthly_financial_summaries_user_id_month_key` |
-| Resumo por categoria | `monthly_category_summaries_user_id_category_id_month_type_key` |
-| Login / refresh token | `auth_sessions_refresh_token_hash_idx` |
-| Jobs de recorrência | `recurring_transactions_user_id_next_occurrence_date_idx` |
-| Deduplicação import | `import_items_import_batch_id_fingerprint_key` |
+Importante: esses avisos nao significam ausencia total de indices uteis para as queries principais do produto. Eles indicam que, para operacoes iniciadas pela FK isolada, principalmente joins/deletes/validacoes referenciais pelo lado da FK, o Postgres pode nao usar um indice cujo primeiro campo e `user_id`.
 
-### 3.2 Índices ausentes (recomendação futura)
-
-| Tabela | Coluna FK | Motivo | Prioridade |
-|---|---|---|---|
-| `import_items` | `account_id` | FK sem índice dedicado; JOINs por conta na revisão de importação | Média |
-| `import_batches` | `account_id` | Listagem de imports por conta (sem filtro user+account+hash) | Baixa |
-| `budget_category_limits` | `budget_id` | Coberto pelo UNIQUE `(budget_id, category_id)` — OK para lookup por budget | — |
-
-**Recomendação (não aplicar agora):**
+Recomendacao futura, nao aplicada:
 
 ```sql
--- Quando volume de importação crescer:
-CREATE INDEX CONCURRENTLY import_items_account_id_idx
-  ON import_items (account_id);
+CREATE INDEX CONCURRENTLY budget_category_limits_category_id_idx
+  ON budget_category_limits (category_id);
+
+CREATE INDEX CONCURRENTLY goal_contributions_goal_id_idx
+  ON goal_contributions (goal_id);
 
 CREATE INDEX CONCURRENTLY import_batches_account_id_idx
   ON import_batches (account_id);
+
+CREATE INDEX CONCURRENTLY import_items_account_id_idx
+  ON import_items (account_id);
+
+CREATE INDEX CONCURRENTLY monthly_category_summaries_category_id_idx
+  ON monthly_category_summaries (category_id);
+
+CREATE INDEX CONCURRENTLY transactions_account_id_idx
+  ON transactions (account_id);
+
+CREATE INDEX CONCURRENTLY transactions_category_id_idx
+  ON transactions (category_id);
 ```
 
-### 3.3 Índices parciais para soft delete
+Prioridade: media antes de alta escala; baixa para o MVP vazio.
 
-Consultas de produto filtram `deleted_at IS NULL`. Com volume alto, índices parciais reduzem tamanho e melhoram cache hit:
+---
+
+## 4. Indices Unused
+
+O Supabase Advisor marcou muitos indices como unused.
+
+Conclusao: isso e esperado porque o banco esta sem dados e sem trafego de aplicacao. Nao remover indices agora.
+
+Recomendacao:
+
+- Reavaliar apos dados reais e carga do backend.
+- Usar `pg_stat_statements` e `EXPLAIN ANALYZE`.
+- Remover indices somente com evidencia de custo de escrita/armazenamento superior ao ganho de leitura.
+
+---
+
+## 5. Foreign Keys
+
+Nao foram encontradas relacoes Prisma sem FK correspondente no banco.
+
+O uso de `ON DELETE RESTRICT` esta correto para fintech:
+
+- Evita perda acidental de historico financeiro.
+- Obriga soft delete ou arquivamento controlado.
+- Mantem trilha de auditoria e consistencia de agregados.
+
+Recomendacao:
+
+- Implementar delecao logica no NestJS.
+- Usar transacoes Prisma atomicas para transferencias, importacoes e recalculos.
+- Evitar deletes fisicos em entidades financeiras core.
+
+---
+
+## 6. Enums
+
+Todos os 39 enums estao em uso por pelo menos uma coluna.
+
+Nao foram encontrados enums orfaos.
+
+Pontos de atencao:
+
+- `account_type.card` existe antes do modulo de cartao estar no MVP. Isso e aceitavel como extensibilidade.
+- Canais `email` e `push` em `notification_channel` podem depender de infraestrutura futura.
+- Valores novos em enums PostgreSQL devem ser adicionados por migration Prisma, nunca manualmente sem versionamento.
+
+---
+
+## 7. Campos Monetarios
+
+Foram verificados 28 campos numericos.
+
+Padrao aprovado:
+
+- `DECIMAL(19,4)` para dinheiro e saldos.
+- `DECIMAL(9,4)` para percentuais e metricas do score.
+- `DECIMAL(5,4)` para confidence.
+
+Riscos evitados:
+
+- Nao ha `float`.
+- Nao ha `double precision`.
+- Nao ha tipo `money`.
+
+Recomendacao para o backend:
+
+- Trafegar valores monetarios como string decimal nas APIs.
+- Usar `Prisma.Decimal` ou biblioteca decimal.
+- Nao converter valores financeiros persistentes com `Number()`.
+
+---
+
+## 8. Soft Delete
+
+Tabelas core com `deleted_at`:
+
+- `users`
+- `accounts`
+- `categories`
+- `transactions`
+- `transfers`
+- `monthly_budgets`
+- `goals`
+- `goal_contributions`
+- `recurring_transactions`
+
+Recomendacoes:
+
+- Criar extensao/middleware Prisma para aplicar `deleted_at IS NULL` por padrao nas leituras.
+- Garantir que agregados sejam invalidados/recalculados apos soft delete.
+- Avaliar indices parciais no futuro:
 
 ```sql
--- Exemplo futuro (transactions):
 CREATE INDEX CONCURRENTLY transactions_active_user_date_idx
   ON transactions (user_id, transaction_date DESC)
   WHERE deleted_at IS NULL AND status = 'confirmed';
 ```
 
-**Prioridade:** Baixa no MVP; revisitar acima de ~100k transações/usuário.
-
-### 3.4 Índices compostos redundantes
-
-`transactions` possui 5 índices compostos com prefixo `user_id`. PostgreSQL pode usar o índice mais específico; os demais ocupam espaço.
-
-| Índice | Redundância potencial |
-|---|---|
-| `transactions_user_id_transaction_date_idx` | Prefixo de índices mais específicos |
-| `transactions_user_id_status_transaction_date_idx` | Útil para filtros por status |
-
-**Recomendação:** Manter no MVP; reavaliar com `EXPLAIN ANALYZE` em produção antes de remover qualquer índice.
-
 ---
 
-## 4. Foreign keys
+## 9. Unique Constraints e Soft Delete
 
-### 4.1 Cobertura
+Algumas uniques podem bloquear recriacao de entidades deletadas logicamente:
 
-Todas as relações Prisma possuem FK explícita na migration. Destaques positivos:
+- `categories_user_id_type_name_key`
+- `monthly_budgets_user_id_month_key`
+- `monthly_financial_summaries_user_id_month_key`
+- `monthly_category_summaries_user_id_category_id_month_type_key`
 
-- **Transferências:** `transfers` → `accounts` (from/to) + `transactions.transfer_id`
-- **Importação circular:** `transactions.import_item_id` ↔ `import_items` com UNIQUE
-- **Metas:** `goal_contributions.transaction_id` opcional mas com FK
-- **Auditoria:** `audit_logs.user_id` e `actor_user_id` → `users`
-
-### 4.2 Integridade referencial — pontos de atenção
-
-| Cenário | Comportamento atual | Recomendação de aplicação |
-|---|---|---|
-| Excluir usuário com dados financeiros | `ON DELETE RESTRICT` bloqueia | Implementar soft delete em cascata lógica no NestJS |
-| Excluir conta com transações | RESTRICT | Arquivar conta + soft delete transações antes |
-| Categoria global (`user_id` NULL) | FK permite NULL | Seed de categorias padrão com `user_id = NULL`, `is_default = true` |
-| Transferência entre contas | Duas transações + 1 transfer | Usar transação Prisma atômica |
-
-### 4.3 FKs ausentes (nenhuma crítica)
-
-Não foram identificadas relações Prisma sem FK correspondente na migration.
-
----
-
-## 5. Enums
-
-### 5.1 Utilização
-
-Todos os 39 enums possuem pelo menos uma coluna referenciada. Nenhum enum não utilizado.
-
-### 5.2 Enums com valores "futuros"
-
-| Enum | Valor | Contexto |
-|---|---|---|
-| `account_type` | `card` | Cartão fora do MVP — extensibilidade OK |
-| `notification_channel` | `email`, `push` | Canais futuros — OK |
-| `goal_type` | `retirement`, `property` | Metas avançadas — OK |
-
-**Recomendação:** Documentar no NestJS quais valores são expostos no MVP via DTO validation (whitelist).
-
-### 5.3 Evolução de enums no PostgreSQL
-
-Adicionar valores a enums existentes no Supabase:
+Para entidades editaveis pelo usuario, especialmente `categories` e `monthly_budgets`, avaliar partial unique indexes em migration futura:
 
 ```sql
-ALTER TYPE transaction_source ADD VALUE IF NOT EXISTS 'open_finance';
-```
-
-Prisma exige migration correspondente. Evitar remover/renomear valores em produção.
-
----
-
-## 6. Performance — gargalos potenciais
-
-### 6.1 Tabela `transactions` (hot path)
-
-Maior volume esperado. Mitigações já previstas na arquitetura:
-
-- Agregados em `monthly_financial_summaries` e `monthly_category_summaries`
-- Dashboard lê agregados, não soma transações brutas
-- Índices compostos por `user_id` + dimensões
-
-**Risco MVP:** Baixo.  
-**Risco escala:** Médio sem jobs de agregação.
-
-### 6.2 Tabela `audit_logs` (append-only)
-
-Crescimento contínuo. Jobs documentados (`AuditRetentionJob`) devem:
-
-- Particionar ou arquivar logs > 12–24 meses
-- Considerar particionamento por `created_at` (mensal) no V2
-
-### 6.3 JSONB (`transactions.metadata`, `audit_logs.before/after`)
-
-Sem índices GIN no MVP — correto. Se consultas JSON forem necessárias:
-
-```sql
-CREATE INDEX CONCURRENTLY audit_logs_metadata_gin_idx
-  ON audit_logs USING GIN (metadata jsonb_path_ops);
-```
-
-**Prioridade:** Baixa.
-
-### 6.4 Connection pooling (Supabase)
-
-| Conexão | Uso | Limite |
-|---|---|---|
-| Pooler (6543) | NestJS runtime | `connection_limit=1` por instância Prisma |
-| Direct (5432) | Migrations, scripts | Evitar no runtime |
-
-**Recomendação:** No NestJS, usar `@prisma/adapter-pg` + pooler; escalar horizontalmente com limite conservador de conexões.
-
-### 6.5 Jobs concorrentes
-
-Locks Redis documentados para evitar:
-
-- Duplo cálculo de score
-- Dupla geração de transações recorrentes
-- Rebuild concorrente de agregados
-
-Esses locks são responsabilidade da aplicação, não do banco.
-
----
-
-## 7. Campos monetários
-
-### 7.1 Padrão adotado
-
-| Tipo | Uso | Avaliação |
-|---|---|---|
-| `DECIMAL(19,4)` | Valores em BRL/contas | ✅ Adequado até trilhões com 4 casas |
-| `DECIMAL(9,4)` | Taxas e percentuais | ✅ Adequado |
-| `DECIMAL(5,4)` | Confidence (0–1) | ✅ Adequado |
-
-### 7.2 Recomendações de aplicação (NestJS)
-
-1. Trafegar valores como **string decimal** na API (conforme API_DESIGN.md)
-2. Usar `Prisma.Decimal` ou biblioteca decimal no backend — nunca `Number()` para persistência
-3. Arredondamentos de exibição (2 casas) apenas na camada de apresentação
-4. Validação: `amount > 0` para receitas/despesas; transferências exigem `from ≠ to`
-
-### 7.3 CHECK constraints (futuro)
-
-Não presentes no schema atual. Opcionais para reforço:
-
-```sql
--- Exemplo futuro:
-ALTER TABLE transactions ADD CONSTRAINT transactions_amount_positive
-  CHECK (amount > 0);
-```
-
-Implementar via migration separada após validação de regras no NestJS.
-
----
-
-## 8. Soft delete
-
-### 8.1 Entidades com `deleted_at`
-
-users, accounts, categories, transactions, transfers, monthly_budgets, goals, goal_contributions, recurring_transactions
-
-### 8.2 Consistência
-
-| Aspecto | Status |
-|---|---|
-| Índice em `deleted_at` | ✅ Nas tabelas principais |
-| Filtro padrão `deleted_at IS NULL` | ⏭ Implementar no Prisma middleware/extension |
-| Invalidação de agregados pós-delete | ⏭ Implementar no NestJS (eventos de domínio) |
-| UNIQUE constraints com soft delete | ⚠️ Ver seção 8.3 |
-
-### 8.3 UNIQUE + soft delete
-
-Exemplo: `categories_user_id_type_name_key` impede recriar categoria com mesmo nome após soft delete.
-
-**Opções futuras (escolher uma):**
-
-1. **Partial unique index** (recomendado):
-
-```sql
--- Substituir UNIQUE atual por:
 CREATE UNIQUE INDEX categories_user_type_name_active_key
   ON categories (user_id, type, name)
   WHERE deleted_at IS NULL;
 ```
 
-2. Renomear categoria deletada internamente (`name + '_deleted_' + id`)
-
-**Prioridade:** Média — impacta UX ao recriar categorias.
-
-Mesma lógica aplica-se a `monthly_budgets_user_id_month_key` se orçamentos deletados forem recriados no mesmo mês.
+Nao aplicar agora sem ajustar Prisma e fluxo do backend.
 
 ---
 
-## 9. Segurança e RLS
+## 10. Performance para Dashboards
 
-### 9.1 Estado atual
+O modelo esta adequado para MVP porque usa tabelas agregadas:
 
-- RLS **desligado** em todas as tabelas
-- Autorização 100% via NestJS (correto para arquitetura atual)
-- Políticas preparadas em `supabase/rls/recommended_policies.sql`
+- `monthly_financial_summaries`
+- `monthly_category_summaries`
+- `account_balance_snapshots`
+- `financial_scores`
+- `financial_score_components`
 
-### 9.2 Quando ativar RLS
+Recomendacoes:
 
-Ativar apenas se:
-
-- Frontend acessar PostgREST/Supabase client diretamente, ou
-- Exposição pública do banco sem API intermediária
-
-Para NestJS-only: RLS é **opcional** (defense in depth).
-
-### 9.3 Credenciais Supabase
-
-- Nunca expor `service_role` no frontend
-- `DATABASE_URL` e `DIRECT_URL` apenas no backend/CI secrets
-- Rotacionar senha do banco se vazamento suspeito
+- Dashboard deve ler agregados sempre que possivel.
+- `transactions` deve ser usada para drill-down e reconstrucao.
+- Jobs de agregacao devem rodar apos criacao, edicao, importacao e soft delete de transacoes.
+- Usar Redis para locks de recalculo por usuario/mes.
 
 ---
 
-## 10. Seeds e dados iniciais pendentes
+## 11. Financial Health Score
 
-| Item | Status | Recomendação |
-|---|---|---|
-| Categorias padrão (Alimentação, Transporte, etc.) | ⏭ Pendente | `prisma/seed.ts` com `user_id = NULL`, `is_default = true` |
-| Migration lock | ✅ Criado | `prisma/migrations/migration_lock.toml` |
-| Extensões PostgreSQL | N/A | `uuid-ossp` não necessário — UUID gerado pela aplicação |
+Persistencia adequada:
 
----
+- `financial_scores` guarda score final, classificacao, periodo, versao e metricas.
+- `financial_score_components` guarda componentes explicaveis, peso e score normalizado.
 
-## 11. Checklist de validação ao vivo
+Recomendacoes:
 
-Após configurar `.env`, confirmar:
-
-- [ ] `_prisma_migrations` contém `20260624000100_init_supabase_schema`
-- [ ] 25 tabelas em `public`
-- [ ] 39 enums
-- [ ] RLS desligado em todas as tabelas
-- [ ] Nenhuma FK órfã (`fkWithoutIndex` vazio ou apenas casos conhecidos)
-- [ ] Conexão pooler (6543) funciona com Prisma Client
-- [ ] Conexão direct (5432) funciona com `prisma migrate deploy`
+- Manter `calculation_version` obrigatoria.
+- Nunca sobrescrever scores historicos sem motivo; criar nova linha por versao/periodo.
+- Usar transacao para gravar score e componentes juntos.
+- Cachear ultimo score no Redis para dashboard.
 
 ---
 
-## 12. Resumo de recomendações por prioridade
+## 12. Insights de IA
 
-### Alta (antes de produção)
+Persistencia adequada:
 
-1. Implementar Prisma extension/middleware para filtrar `deleted_at IS NULL`
-2. Garantir transações atômicas em transferências e importações
-3. Seed de categorias padrão
-4. Secrets management para `DATABASE_URL` / `DIRECT_URL`
+- `insight_generation_runs` registra execucao, modelo, prompt, tokens e erro.
+- `financial_insights` registra insights gerados e estado de leitura.
 
-### Média (primeiros meses pós-MVP)
+Recomendacoes:
 
-1. Partial unique indexes para categorias e orçamentos com soft delete
-2. Índice em `import_items.account_id`
-3. Job de retenção de `audit_logs`
-4. Monitoramento com `pg_stat_statements` no Supabase
-
-### Baixa (escala)
-
-1. Índices parciais `WHERE deleted_at IS NULL`
-2. Particionamento de `audit_logs` e possivelmente `transactions`
-3. CHECK constraints de valores positivos
-4. Índices GIN em JSONB se necessário
+- Nunca enviar dados sensiveis desnecessarios ao servico de IA.
+- Guardar `prompt_version`.
+- Guardar `input_summary` minimizado.
+- Usar jobs assicronos e idempotencia por usuario/periodo.
 
 ---
 
-## 13. Conclusão
+## 13. Auditoria
 
-O schema Prisma migrado para Supabase está **estruturalmente sólido**, alinhado ao PRD e à arquitetura NestJS. Não há inconsistências críticas de integridade, tipos monetários ou modelagem multi-tenant.
+`audit_logs` esta correto como append-only.
 
-As melhorias sugeridas neste documento devem ser implementadas **deliberadamente via novas migrations**, após validação no NestJS — conforme solicitado, **nenhuma alteração automática foi feita no schema**.
+Recomendacoes:
+
+- Nao usar soft delete em auditoria.
+- Nao permitir update/delete pelo backend comum.
+- Retencao e arquivamento devem ser jobs separados.
+- Avaliar particionamento por `created_at` quando crescer.
+
+---
+
+## 14. CSV e OFX
+
+O modelo cobre importacao com:
+
+- `import_batches`
+- `import_items`
+- `transactions.import_item_id`
+- fingerprints e hash de arquivo
+- status por batch e item
+
+Recomendacoes:
+
+- Deduplicacao por `import_batch_id + fingerprint`.
+- Hash de arquivo por usuario/conta.
+- Revisao manual antes de consolidar itens ambigos.
+- Importacao deve criar transacoes em transacao atomica.
+
+---
+
+## 15. RLS e Seguranca
+
+Estado atual:
+
+- RLS desligado em todas as 25 tabelas.
+- Isso foi solicitado explicitamente.
+- Supabase Advisor marca como erro porque `public` pode ser exposto via Data API.
+
+Para manter seguro enquanto RLS esta desligado:
+
+- Nao usar Supabase client direto no frontend para essas tabelas.
+- Nao expor `service_role`.
+- Fazer todo acesso via NestJS.
+- Controlar segredos em backend/CI.
+
+Politicas futuras estao em:
+
+```text
+supabase/rls/recommended_policies.sql
+```
+
+Como a auth e NestJS, o padrao futuro recomendado e setar contexto por transacao:
+
+```sql
+SET LOCAL app.current_user_id = '<authenticated-user-uuid>';
+```
+
+---
+
+## 16. Prisma Migration History
+
+Problema observado:
+
+- O schema remoto existe.
+- A tabela `_prisma_migrations` nao existe.
+- A migration foi aplicada por MCP/Supabase, nao por `prisma migrate deploy`.
+
+Impacto:
+
+- Um futuro `prisma migrate deploy` pode tentar aplicar novamente a migration inicial e falhar por objetos ja existentes.
+
+Recomendacoes:
+
+1. Preferivel em ambiente limpo: recriar o banco e aplicar `prisma migrate deploy` via `DIRECT_URL`.
+2. Se manter o schema atual: usar `prisma migrate resolve --applied 20260624000100_init_supabase_schema` com `DIRECT_URL`, depois validar.
+3. Documentar essa decisao antes do primeiro pipeline CI/CD.
+
+---
+
+## 17. Prioridades
+
+Alta antes do backend avançar:
+
+- Resolver/alinhar `_prisma_migrations`.
+- Garantir secrets corretos de `DATABASE_URL` e `DIRECT_URL`.
+- Implementar soft delete default no Prisma/NestJS.
+
+Media:
+
+- Avaliar covering indexes para FKs apontadas pelo Supabase Advisor.
+- Planejar partial unique indexes para entidades com soft delete.
+- Implementar seed de categorias padrao.
+
+Baixa:
+
+- Indices parciais para tabelas grandes.
+- Particionamento de `audit_logs`.
+- GIN indexes em JSONB apenas se houver consultas por JSON.
+
+---
+
+## 18. Conclusao
+
+O schema esta coerente com o PRD, DATABASE.md e ARCHITECTURE.md, e o catalogo remoto confirma que as entidades principais existem no Supabase.
+
+O unico ponto que impede considerar a operacao 100% fechada para CI/CD e o historico do Prisma Migrate: `_prisma_migrations` precisa ser alinhada. Para desenvolvimento NestJS imediato, o banco esta utilizavel; para pipeline de migrations, falta essa reconciliacao.
