@@ -1,4 +1,4 @@
-import { AccountStatus, AccountType, CategoryStatus, CategoryType, Prisma, TransactionSource, TransactionStatus, TransactionType, TransferStatus, type Account, type Category, type Transaction, type Transfer, type User } from "@prisma/client";
+import { AccountStatus, AccountType, CategoryStatus, CategoryType, MonthlyBudgetStatus, Prisma, TransactionSource, TransactionStatus, TransactionType, TransferStatus, type Account, type BudgetCategoryLimit, type Category, type MonthlyBudget, type Transaction, type Transfer, type User } from "@prisma/client";
 
 let sequence = 0;
 
@@ -38,6 +38,16 @@ export function createTransaction(overrides: Partial<Transaction> = {}): Transac
 export function createTransfer(overrides: Partial<Transfer> = {}): Transfer {
   const createdAt = testDate();
   return { id: testUuid(), userId: testUuid(1), fromAccountId: testUuid(2), toAccountId: testUuid(3), amount: testDecimal("10.0000"), transferDate: testDate(), description: null, status: TransferStatus.CONFIRMED, createdAt, updatedAt: createdAt, deletedAt: null, ...overrides };
+}
+
+export function createMonthlyBudget(overrides: Partial<MonthlyBudget> = {}): MonthlyBudget {
+  const createdAt = testDate();
+  return { id: testUuid(), userId: testUuid(1), month: testDate("2026-01-01T00:00:00.000Z"), totalLimit: testDecimal("100.0000"), currency: "BRL", status: MonthlyBudgetStatus.ACTIVE, createdAt, updatedAt: createdAt, deletedAt: null, ...overrides };
+}
+
+export function createBudgetCategoryLimit(overrides: Partial<BudgetCategoryLimit> = {}): BudgetCategoryLimit {
+  const createdAt = testDate();
+  return { id: testUuid(), budgetId: testUuid(1), userId: testUuid(1), categoryId: testUuid(2), limitAmount: testDecimal("100.0000"), alert80SentAt: null, alert100SentAt: null, createdAt, updatedAt: createdAt, ...overrides };
 }
 
 export interface AuthenticatedFixture { id: string; sessionId: string; }

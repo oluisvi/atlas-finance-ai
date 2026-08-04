@@ -10,8 +10,9 @@ import { PrismaModule } from "./modules/prisma/prisma.module.js";
 import { UsersModule } from "./modules/users/users.module.js";
 import { TransactionsModule } from "./modules/transactions/transactions.module.js";
 import { TransfersModule } from "./modules/transfers/transfers.module.js";
+import { BudgetsModule } from "./modules/budgets/budgets.module.js";
 
 @Module({
-  imports: [AppConfigModule, PrismaModule, AuditModule, UsersModule, AuthModule, AccountsModule, CategoriesModule, TransactionsModule, TransfersModule, HealthModule]
+  imports: [AppConfigModule, PrismaModule, AuditModule, UsersModule, AuthModule, AccountsModule, CategoriesModule, TransactionsModule, TransfersModule, BudgetsModule, HealthModule]
 })
 export class AppModule {}
