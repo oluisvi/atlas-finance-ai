@@ -2,8 +2,8 @@ import { ConflictException, Inject, Injectable, NotFoundException } from "@nestj
 import { Prisma } from "@prisma/client";
 
 import { AuditService } from "../audit/audit.service.js";
+import { FINANCIAL_DATABASE, type FinancialDatabasePort } from "../financial/financial-database.port.js";
 import { applyBalanceDelta, type DatabaseTransaction, serializeDecimal } from "../financial/money.js";
-import { PrismaService } from "../prisma/prisma.service.js";
 import type { CreateTransactionDto, UpdateTransactionDto } from "./dto/transaction.dto.js";
 import { ListTransactionsDto } from "./dto/list-transactions.dto.js";
 
@@ -16,7 +16,7 @@ function present(record: TransactionRecord): TransactionResponse { return { ...r
 
 @Injectable()
 export class TransactionsService {
-  constructor(@Inject(PrismaService) private readonly prisma: PrismaService, @Inject(AuditService) private readonly audit: AuditService) {}
+  constructor(@Inject(FINANCIAL_DATABASE) private readonly prisma: FinancialDatabasePort, @Inject(AuditService) private readonly audit: AuditService) {}
   async create(userId: string, dto: CreateTransactionDto): Promise<TransactionResponse> { return this.prisma.$transaction(async transaction => { await this.validateReferences(transaction, userId, dto.accountId, dto.categoryId, dto.type); const record = await transaction.transaction.create({ data: { accountId: dto.accountId, amount: new Prisma.Decimal(dto.amount), categoryId: dto.categoryId, description: dto.description.trim(), merchantName: dto.merchantName, notes: dto.notes, source: "MANUAL", status: dto.status ?? "CONFIRMED", transactionDate: new Date(dto.transactionDate), type: dto.type, userId }, select: transactionSelect }); if (record.status === "CONFIRMED") await applyBalanceDelta(transaction, record.accountId, record.type, record.amount); return present(record); }); }
   async list(userId: string, query: ListTransactionsDto): Promise<TransactionListResponse> { const where: Prisma.TransactionWhereInput = { deletedAt: null, userId, accountId: query.accountId, categoryId: query.categoryId, type: query.type, status: query.status, transactionDate: { gte: query.startDate ? new Date(query.startDate) : undefined, lte: query.endDate ? new Date(query.endDate) : undefined }, description: query.search ? { contains: query.search.trim(), mode: "insensitive" } : undefined, account: query.currency ? { currency: query.currency } : undefined }; const [records, total] = await this.prisma.$transaction([this.prisma.transaction.findMany({ orderBy: [{ [query.sortBy]: query.sortOrder }, { id: query.sortOrder }], select: transactionSelect, skip: (query.page - 1) * query.pageSize, take: query.pageSize, where }), this.prisma.transaction.count({ where })]); return { data: records.map(present), meta: { page: query.page, pageSize: query.pageSize, total, totalPages: Math.ceil(total / query.pageSize) } }; }
   async findOne(userId: string, id: string): Promise<TransactionResponse> { const record = await this.prisma.transaction.findFirst({ select: transactionSelect, where: { deletedAt: null, id, userId } }); if (!record) throw this.notFound(); return present(record); }

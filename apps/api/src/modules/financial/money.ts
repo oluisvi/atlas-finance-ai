@@ -1,6 +1,7 @@
 import { Prisma } from "@prisma/client";
+import type { FinancialTransactionPort } from "./financial-database.port.js";
 
-export type DatabaseTransaction = Prisma.TransactionClient;
+export type DatabaseTransaction = FinancialTransactionPort;
 export type BalanceDirection = "increment" | "decrement";
 
 export function balanceDirection(type: "INCOME" | "EXPENSE" | "ADJUSTMENT" | "TRANSFER_IN" | "TRANSFER_OUT", reverse = false): BalanceDirection {
