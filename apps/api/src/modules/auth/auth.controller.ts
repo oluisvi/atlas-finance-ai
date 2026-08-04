@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, Post, Req, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, HttpCode, Inject, Post, Req, UseGuards } from "@nestjs/common";
 import type { Request } from "express";
 
 import { CurrentUser } from "./decorators/current-user.decorator.js";
@@ -20,7 +20,7 @@ function requestMetadata(request: Request): RequestMetadata {
 
 @Controller("auth")
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(@Inject(AuthService) private readonly authService: AuthService) {}
 
   @Post("register")
   async register(@Body() dto: RegisterDto, @Req() request: Request) {
