@@ -1,0 +1,3 @@
+import { IsBoolean, IsEnum, IsInt, IsOptional, IsString, IsUUID, MaxLength, Min, MinLength } from "class-validator";
+export enum CategoryTypeDto { INCOME = "INCOME", EXPENSE = "EXPENSE", BOTH = "BOTH" }
+export class CreateCategoryDto { @IsOptional() @IsString() @MaxLength(20) color?: string; @IsOptional() @IsString() @MaxLength(60) icon?: string; @IsOptional() @IsBoolean() isEssential?: boolean; @IsString() @MinLength(1) @MaxLength(80) name!: string; @IsOptional() @IsUUID("4") parentId?: string; @IsOptional() @IsInt() @Min(0) sortOrder?: number; @IsEnum(CategoryTypeDto) type!: CategoryTypeDto; }

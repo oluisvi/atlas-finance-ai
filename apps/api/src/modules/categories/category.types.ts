@@ -1,0 +1,1 @@
+export interface CategoryResponse { color: string | null; createdAt: Date; icon: string | null; id: string; isDefault: boolean; isEssential: boolean; name: string; parentId: string | null; sortOrder: number; status: string; type: string; updatedAt: Date; }
