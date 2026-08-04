@@ -41,8 +41,22 @@ function assertIntegerInRange(name: string, rawValue: string, min: number, max: 
   }
 }
 
+function assertSecret(name: string, value: string | undefined): void {
+  if (!value || value.length < 32 || value.includes("replace-with") || value.includes("<") || value.includes(">")) {
+    throw new Error(`${name} must be a non-placeholder secret with at least 32 characters`);
+  }
+}
+
+function assertDuration(name: string, value: string | undefined): void {
+  if (!value || !/^\d+[smhd]$/.test(value)) {
+    throw new Error(`${name} must use an integer duration with s, m, h or d suffix`);
+  }
+}
+
 export function validateEnvironment(env: Environment): Environment {
   const nodeEnv = env.NODE_ENV ?? "development";
+  const accessTtl = env.JWT_ACCESS_TTL ?? env.JWT_ACCESS_EXPIRES_IN;
+  const refreshTtl = env.JWT_REFRESH_TTL ?? env.JWT_REFRESH_EXPIRES_IN;
 
   if (!allowedNodeEnvironments.has(nodeEnv as NodeEnvironment)) {
     throw new Error("NODE_ENV must be one of development, test, staging or production");
@@ -52,6 +66,14 @@ export function validateEnvironment(env: Environment): Environment {
   assertIntegerInRange("DATABASE_POOL_MAX", env.DATABASE_POOL_MAX ?? "10", 1, 50);
   assertPostgresUrl("DATABASE_URL", env.DATABASE_URL, true);
   assertPostgresUrl("DIRECT_URL", env.DIRECT_URL, false);
+  assertSecret("JWT_ACCESS_SECRET", env.JWT_ACCESS_SECRET);
+  assertSecret("JWT_REFRESH_SECRET", env.JWT_REFRESH_SECRET);
+  assertDuration("JWT_ACCESS_TTL", accessTtl);
+  assertDuration("JWT_REFRESH_TTL", refreshTtl);
+
+  if (!env.JWT_ISSUER || !env.JWT_AUDIENCE) {
+    throw new Error("JWT_ISSUER and JWT_AUDIENCE are required");
+  }
 
   return {
     ...env,
@@ -59,6 +81,8 @@ export function validateEnvironment(env: Environment): Environment {
     API_VERSION: env.API_VERSION ?? "1",
     API_PORT: env.API_PORT ?? "3000",
     DATABASE_POOL_MAX: env.DATABASE_POOL_MAX ?? "10",
+    JWT_ACCESS_TTL: accessTtl ?? "15m",
+    JWT_REFRESH_TTL: refreshTtl ?? "30d",
     NODE_ENV: nodeEnv
   };
 }

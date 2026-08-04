@@ -17,6 +17,12 @@ describe("validateEnvironment", () => {
   it("returns normalized defaults for a valid environment", () => {
     const env = validateEnvironment({
       DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/postgres",
+      JWT_ACCESS_SECRET: "test-access-secret-that-is-long-enough-for-validation",
+      JWT_ACCESS_TTL: "15m",
+      JWT_AUDIENCE: "atlas-finance-ai-test",
+      JWT_ISSUER: "atlas-finance-ai-test",
+      JWT_REFRESH_SECRET: "test-refresh-secret-that-is-long-enough-for-validation",
+      JWT_REFRESH_TTL: "30d",
       NODE_ENV: "test"
     });
 

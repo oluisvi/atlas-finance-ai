@@ -26,3 +26,12 @@ export const databaseConfig = registerAs("database", () => ({
   poolMax: Number.parseInt(process.env.DATABASE_POOL_MAX ?? "10", 10),
   url: process.env.DATABASE_URL ?? ""
 }));
+
+export const authConfig = registerAs("auth", () => ({
+  accessSecret: process.env.JWT_ACCESS_SECRET ?? "",
+  accessTtl: process.env.JWT_ACCESS_TTL ?? process.env.JWT_ACCESS_EXPIRES_IN ?? "15m",
+  audience: process.env.JWT_AUDIENCE ?? "atlas-finance-ai",
+  issuer: process.env.JWT_ISSUER ?? "atlas-finance-ai",
+  refreshSecret: process.env.JWT_REFRESH_SECRET ?? "",
+  refreshTtl: process.env.JWT_REFRESH_TTL ?? process.env.JWT_REFRESH_EXPIRES_IN ?? "30d"
+}));

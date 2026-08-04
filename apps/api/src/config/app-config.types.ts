@@ -13,4 +13,12 @@ export interface AppConfiguration {
     poolMax: number;
     url: string;
   };
+  auth: {
+    accessSecret: string;
+    accessTtl: string;
+    audience: string;
+    issuer: string;
+    refreshSecret: string;
+    refreshTtl: string;
+  };
 }

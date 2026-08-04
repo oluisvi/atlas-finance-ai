@@ -1,7 +1,7 @@
 import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
 
-import { appConfig, databaseConfig } from "./configuration.js";
+import { appConfig, authConfig, databaseConfig } from "./configuration.js";
 import { validateEnvironment } from "./environment.validation.js";
 
 @Module({
@@ -10,7 +10,7 @@ import { validateEnvironment } from "./environment.validation.js";
       cache: true,
       expandVariables: true,
       isGlobal: true,
-      load: [appConfig, databaseConfig],
+      load: [appConfig, databaseConfig, authConfig],
       validate: validateEnvironment
     })
   ]
