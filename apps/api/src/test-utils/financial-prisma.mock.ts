@@ -1,20 +1,25 @@
 import type { Prisma } from "@prisma/client";
 import type { FinancialDatabasePort, FinancialTransactionPort } from "../modules/financial/financial-database.port.js";
 
-type DelegateMethod<TDelegate, TMethod extends keyof TDelegate> = TDelegate[TMethod] extends (...arguments_: infer TArguments) => infer TResult ? jest.Mock<TResult, TArguments> : never;
+type MockedDelegateMethods<TDelegate, TMethod extends keyof TDelegate> = {
+  [TKey in TMethod]: TDelegate[TKey] extends (...arguments_: never[]) => unknown
+    ? jest.MockedFunction<TDelegate[TKey]>
+    : never;
+};
 type AccountDelegate = Prisma.TransactionClient["account"];
 type CategoryDelegate = Prisma.TransactionClient["category"];
 type TransactionDelegate = Prisma.TransactionClient["transaction"];
 type TransferDelegate = Prisma.TransactionClient["transfer"];
 
 export interface FinancialTransactionClientMock extends FinancialTransactionPort {
-  account: Pick<AccountDelegate, "findFirst" | "findMany" | "update">;
-  category: Pick<CategoryDelegate, "findFirst">;
-  transaction: Pick<TransactionDelegate, "create" | "createMany" | "findFirst" | "findMany" | "count" | "update" | "updateMany">;
-  transfer: Pick<TransferDelegate, "create" | "findFirst" | "findMany" | "count" | "update">;
+  account: MockedDelegateMethods<AccountDelegate, "findFirst" | "findMany" | "update">;
+  category: MockedDelegateMethods<CategoryDelegate, "findFirst">;
+  transaction: MockedDelegateMethods<TransactionDelegate, "create" | "createMany" | "findFirst" | "findMany" | "count" | "update" | "updateMany">;
+  transfer: MockedDelegateMethods<TransferDelegate, "create" | "findFirst" | "findMany" | "count" | "update">;
 }
 
-export interface FinancialPrismaMock extends FinancialDatabasePort {
+export interface FinancialPrismaMock extends FinancialTransactionClientMock {
+  $transaction: FinancialDatabasePort["$transaction"];
   transactionCalls: number;
 }
 
@@ -41,18 +46,18 @@ export function createFinancialPrismaMock(): FinancialPrismaMock {
 }
 
 export type FinancialDelegateMocks = {
-  accountFindFirst: DelegateMethod<AccountDelegate, "findFirst">;
-  accountFindMany: DelegateMethod<AccountDelegate, "findMany">;
-  accountUpdate: DelegateMethod<AccountDelegate, "update">;
-  categoryFindFirst: DelegateMethod<CategoryDelegate, "findFirst">;
-  transactionCreate: DelegateMethod<TransactionDelegate, "create">;
-  transactionFindFirst: DelegateMethod<TransactionDelegate, "findFirst">;
-  transactionFindMany: DelegateMethod<TransactionDelegate, "findMany">;
-  transactionCount: DelegateMethod<TransactionDelegate, "count">;
-  transactionUpdate: DelegateMethod<TransactionDelegate, "update">;
-  transferCreate: DelegateMethod<TransferDelegate, "create">;
-  transferFindFirst: DelegateMethod<TransferDelegate, "findFirst">;
-  transferFindMany: DelegateMethod<TransferDelegate, "findMany">;
-  transferCount: DelegateMethod<TransferDelegate, "count">;
-  transferUpdate: DelegateMethod<TransferDelegate, "update">;
+  accountFindFirst: MockedDelegateMethods<AccountDelegate, "findFirst">["findFirst"];
+  accountFindMany: MockedDelegateMethods<AccountDelegate, "findMany">["findMany"];
+  accountUpdate: MockedDelegateMethods<AccountDelegate, "update">["update"];
+  categoryFindFirst: MockedDelegateMethods<CategoryDelegate, "findFirst">["findFirst"];
+  transactionCreate: MockedDelegateMethods<TransactionDelegate, "create">["create"];
+  transactionFindFirst: MockedDelegateMethods<TransactionDelegate, "findFirst">["findFirst"];
+  transactionFindMany: MockedDelegateMethods<TransactionDelegate, "findMany">["findMany"];
+  transactionCount: MockedDelegateMethods<TransactionDelegate, "count">["count"];
+  transactionUpdate: MockedDelegateMethods<TransactionDelegate, "update">["update"];
+  transferCreate: MockedDelegateMethods<TransferDelegate, "create">["create"];
+  transferFindFirst: MockedDelegateMethods<TransferDelegate, "findFirst">["findFirst"];
+  transferFindMany: MockedDelegateMethods<TransferDelegate, "findMany">["findMany"];
+  transferCount: MockedDelegateMethods<TransferDelegate, "count">["count"];
+  transferUpdate: MockedDelegateMethods<TransferDelegate, "update">["update"];
 };
