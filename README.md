@@ -855,7 +855,7 @@ Essa abordagem permite:
 
 ---
 
-# Banco de dados
+## Banco de dados
 
 O `prisma/schema.prisma` é a fonte de verdade do modelo de dados.
 
@@ -871,23 +871,21 @@ O banco utiliza:
 - `TIMESTAMPTZ`;
 - soft delete.
 
-Arquitetura de conexão:
+### Arquitetura de conexão
 
 ```mermaid
 flowchart LR
-    API[NestJS API]
-    PRISMA[Prisma 7]
-    ADAPTER[@prisma/adapter-pg]
-    POOLER[Supabase Transaction Pooler]
-    DB[(PostgreSQL)]
+    API["NestJS API"]
+    PRISMA["Prisma 7"]
+    ADAPTER["Prisma Adapter PG"]
+    POOLER["Supabase Transaction Pooler"]
+    DB[("PostgreSQL")]
 
     API --> PRISMA
     PRISMA --> ADAPTER
     ADAPTER --> POOLER
     POOLER --> DB
 ```
-
----
 
 # Health checks
 
