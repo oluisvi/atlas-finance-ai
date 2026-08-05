@@ -1,4 +1,4 @@
-import { AccountStatus, AccountType, CategoryStatus, CategoryType, GoalContributionType, GoalPriority, GoalStatus, GoalType, MonthlyBudgetStatus, Prisma, TransactionSource, TransactionStatus, TransactionType, TransferStatus, type Account, type BudgetCategoryLimit, type Category, type Goal, type GoalContribution, type MonthlyBudget, type Transaction, type Transfer, type User } from "@prisma/client";
+import { AccountStatus, AccountType, CategoryStatus, CategoryType, GoalContributionType, GoalPriority, GoalStatus, GoalType, MonthlyBudgetStatus, Prisma, RecurrenceKind, RecurringTransactionStatus, RecurringTransactionType, TransactionSource, TransactionStatus, TransactionType, TransferStatus, type Account, type BudgetCategoryLimit, type Category, type Goal, type GoalContribution, type MonthlyBudget, type RecurringTransaction, type Transaction, type Transfer, type User } from "@prisma/client";
 
 let sequence = 0;
 
@@ -58,6 +58,10 @@ export function createGoal(overrides: Partial<Goal> = {}): Goal {
 export function createGoalContribution(overrides: Partial<GoalContribution> = {}): GoalContribution {
   const createdAt = testDate();
   return { id: testUuid(), userId: testUuid(1), goalId: testUuid(2), transactionId: null, type: GoalContributionType.CONTRIBUTION, amount: testDecimal("100.0000"), contributionDate: testDate(), notes: null, createdAt, updatedAt: createdAt, deletedAt: null, ...overrides };
+}
+export function createRecurringTransaction(overrides: Partial<RecurringTransaction> = {}): RecurringTransaction {
+  const createdAt = testDate(); const startDate = testDate("2026-02-01T00:00:00.000Z");
+  return { id: testUuid(), userId: testUuid(1), accountId: testUuid(2), categoryId: null, type: RecurringTransactionType.EXPENSE, recurrenceKind: RecurrenceKind.MONTHLY, name: "Subscription", description: null, amount: testDecimal("20.0000"), currency: "BRL", startDate, endDate: null, nextOccurrenceDate: startDate, lastGeneratedAt: null, isSubscription: true, providerName: null, status: RecurringTransactionStatus.ACTIVE, createdAt, updatedAt: createdAt, deletedAt: null, ...overrides };
 }
 
 export interface AuthenticatedFixture { id: string; sessionId: string; }

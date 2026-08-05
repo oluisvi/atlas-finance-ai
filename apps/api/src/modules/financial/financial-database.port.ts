@@ -6,6 +6,7 @@ type TransactionDelegate = Prisma.TransactionClient["transaction"];
 type TransferDelegate = Prisma.TransactionClient["transfer"];
 type GoalDelegate = Prisma.TransactionClient["goal"];
 type GoalContributionDelegate = Prisma.TransactionClient["goalContribution"];
+type RecurringTransactionDelegate = Prisma.TransactionClient["recurringTransaction"];
 
 export interface FinancialTransactionPort {
   account: Pick<AccountDelegate, "findFirst" | "findMany" | "update">;
@@ -14,6 +15,7 @@ export interface FinancialTransactionPort {
   transfer: Pick<TransferDelegate, "create" | "findFirst" | "findMany" | "count" | "update">;
   goal: Pick<GoalDelegate, "create" | "findFirst" | "findMany" | "count" | "update">;
   goalContribution: Pick<GoalContributionDelegate, "create" | "findFirst" | "findMany" | "update">;
+  recurringTransaction: Pick<RecurringTransactionDelegate, "create" | "findFirst" | "findMany" | "count" | "update" | "updateMany">;
 }
 
 export interface FinancialDatabasePort extends FinancialTransactionPort {

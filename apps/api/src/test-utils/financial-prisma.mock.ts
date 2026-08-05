@@ -12,6 +12,7 @@ type TransactionDelegate = Prisma.TransactionClient["transaction"];
 type TransferDelegate = Prisma.TransactionClient["transfer"];
 type GoalDelegate = Prisma.TransactionClient["goal"];
 type GoalContributionDelegate = Prisma.TransactionClient["goalContribution"];
+type RecurringTransactionDelegate = Prisma.TransactionClient["recurringTransaction"];
 
 export interface FinancialTransactionClientMock extends FinancialTransactionPort {
   account: MockedDelegateMethods<AccountDelegate, "findFirst" | "findMany" | "update">;
@@ -20,6 +21,7 @@ export interface FinancialTransactionClientMock extends FinancialTransactionPort
   transfer: MockedDelegateMethods<TransferDelegate, "create" | "findFirst" | "findMany" | "count" | "update">;
   goal: MockedDelegateMethods<GoalDelegate, "create" | "findFirst" | "findMany" | "count" | "update">;
   goalContribution: MockedDelegateMethods<GoalContributionDelegate, "create" | "findFirst" | "findMany" | "update">;
+  recurringTransaction: MockedDelegateMethods<RecurringTransactionDelegate, "create" | "findFirst" | "findMany" | "count" | "update" | "updateMany">;
 }
 
 export interface FinancialPrismaMock extends FinancialTransactionClientMock {
@@ -34,7 +36,8 @@ export function createFinancialPrismaMock(): FinancialPrismaMock {
     transaction: { create: jest.fn(), createMany: jest.fn(), findFirst: jest.fn(), findMany: jest.fn(), count: jest.fn(), update: jest.fn(), updateMany: jest.fn() },
     transfer: { create: jest.fn(), findFirst: jest.fn(), findMany: jest.fn(), count: jest.fn(), update: jest.fn() },
     goal: { create: jest.fn(), findFirst: jest.fn(), findMany: jest.fn(), count: jest.fn(), update: jest.fn() },
-    goalContribution: { create: jest.fn(), findFirst: jest.fn(), findMany: jest.fn(), update: jest.fn() }
+    goalContribution: { create: jest.fn(), findFirst: jest.fn(), findMany: jest.fn(), update: jest.fn() },
+    recurringTransaction: { create: jest.fn(), findFirst: jest.fn(), findMany: jest.fn(), count: jest.fn(), update: jest.fn(), updateMany: jest.fn() }
   };
   let transactionCalls = 0;
   function transaction<T>(callback: (transaction: FinancialTransactionPort) => Promise<T>): Promise<T>;
