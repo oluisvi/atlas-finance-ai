@@ -1,4 +1,4 @@
-import { AccountStatus, AccountType, CategoryStatus, CategoryType, MonthlyBudgetStatus, Prisma, TransactionSource, TransactionStatus, TransactionType, TransferStatus, type Account, type BudgetCategoryLimit, type Category, type MonthlyBudget, type Transaction, type Transfer, type User } from "@prisma/client";
+import { AccountStatus, AccountType, CategoryStatus, CategoryType, GoalContributionType, GoalPriority, GoalStatus, GoalType, MonthlyBudgetStatus, Prisma, TransactionSource, TransactionStatus, TransactionType, TransferStatus, type Account, type BudgetCategoryLimit, type Category, type Goal, type GoalContribution, type MonthlyBudget, type Transaction, type Transfer, type User } from "@prisma/client";
 
 let sequence = 0;
 
@@ -48,6 +48,16 @@ export function createMonthlyBudget(overrides: Partial<MonthlyBudget> = {}): Mon
 export function createBudgetCategoryLimit(overrides: Partial<BudgetCategoryLimit> = {}): BudgetCategoryLimit {
   const createdAt = testDate();
   return { id: testUuid(), budgetId: testUuid(1), userId: testUuid(1), categoryId: testUuid(2), limitAmount: testDecimal("100.0000"), alert80SentAt: null, alert100SentAt: null, createdAt, updatedAt: createdAt, ...overrides };
+}
+
+export function createGoal(overrides: Partial<Goal> = {}): Goal {
+  const createdAt = testDate();
+  return { id: testUuid(), userId: testUuid(1), name: "Emergency fund", type: GoalType.GENERIC, targetAmount: testDecimal("1000.0000"), currentAmount: testDecimal("0.0000"), targetDate: null, currency: "BRL", priority: GoalPriority.MEDIUM, status: GoalStatus.ACTIVE, completedAt: null, createdAt, updatedAt: createdAt, deletedAt: null, ...overrides };
+}
+
+export function createGoalContribution(overrides: Partial<GoalContribution> = {}): GoalContribution {
+  const createdAt = testDate();
+  return { id: testUuid(), userId: testUuid(1), goalId: testUuid(2), transactionId: null, type: GoalContributionType.CONTRIBUTION, amount: testDecimal("100.0000"), contributionDate: testDate(), notes: null, createdAt, updatedAt: createdAt, deletedAt: null, ...overrides };
 }
 
 export interface AuthenticatedFixture { id: string; sessionId: string; }

@@ -9,7 +9,9 @@ function toFinancialTransactionPort(transaction: Prisma.TransactionClient): Fina
     account: transaction.account,
     category: transaction.category,
     transaction: transaction.transaction,
-    transfer: transaction.transfer
+    transfer: transaction.transfer,
+    goal: transaction.goal,
+    goalContribution: transaction.goalContribution
   };
 }
 
@@ -21,6 +23,8 @@ export class FinancialDatabaseAdapter implements FinancialDatabasePort {
   get category(): FinancialTransactionPort["category"] { return this.prisma.category; }
   get transaction(): FinancialTransactionPort["transaction"] { return this.prisma.transaction; }
   get transfer(): FinancialTransactionPort["transfer"] { return this.prisma.transfer; }
+  get goal(): FinancialTransactionPort["goal"] { return this.prisma.goal; }
+  get goalContribution(): FinancialTransactionPort["goalContribution"] { return this.prisma.goalContribution; }
   $transaction<T>(callback: (transaction: FinancialTransactionPort) => Promise<T>): Promise<T>;
   $transaction<TFirst, TSecond>(operations: readonly [Prisma.PrismaPromise<TFirst>, Prisma.PrismaPromise<TSecond>]): Promise<[TFirst, TSecond]>;
   $transaction<P extends readonly Prisma.PrismaPromise<unknown>[]>(operations: P): Promise<{ [K in keyof P]: Awaited<P[K]> }>;

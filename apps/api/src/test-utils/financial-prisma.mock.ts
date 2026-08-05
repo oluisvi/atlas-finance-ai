@@ -10,12 +10,16 @@ type AccountDelegate = Prisma.TransactionClient["account"];
 type CategoryDelegate = Prisma.TransactionClient["category"];
 type TransactionDelegate = Prisma.TransactionClient["transaction"];
 type TransferDelegate = Prisma.TransactionClient["transfer"];
+type GoalDelegate = Prisma.TransactionClient["goal"];
+type GoalContributionDelegate = Prisma.TransactionClient["goalContribution"];
 
 export interface FinancialTransactionClientMock extends FinancialTransactionPort {
   account: MockedDelegateMethods<AccountDelegate, "findFirst" | "findMany" | "update">;
   category: MockedDelegateMethods<CategoryDelegate, "findFirst">;
   transaction: MockedDelegateMethods<TransactionDelegate, "create" | "createMany" | "findFirst" | "findMany" | "count" | "update" | "updateMany">;
   transfer: MockedDelegateMethods<TransferDelegate, "create" | "findFirst" | "findMany" | "count" | "update">;
+  goal: MockedDelegateMethods<GoalDelegate, "create" | "findFirst" | "findMany" | "count" | "update">;
+  goalContribution: MockedDelegateMethods<GoalContributionDelegate, "create" | "findFirst" | "findMany" | "update">;
 }
 
 export interface FinancialPrismaMock extends FinancialTransactionClientMock {
@@ -28,7 +32,9 @@ export function createFinancialPrismaMock(): FinancialPrismaMock {
     account: { findFirst: jest.fn(), findMany: jest.fn(), update: jest.fn() },
     category: { findFirst: jest.fn() },
     transaction: { create: jest.fn(), createMany: jest.fn(), findFirst: jest.fn(), findMany: jest.fn(), count: jest.fn(), update: jest.fn(), updateMany: jest.fn() },
-    transfer: { create: jest.fn(), findFirst: jest.fn(), findMany: jest.fn(), count: jest.fn(), update: jest.fn() }
+    transfer: { create: jest.fn(), findFirst: jest.fn(), findMany: jest.fn(), count: jest.fn(), update: jest.fn() },
+    goal: { create: jest.fn(), findFirst: jest.fn(), findMany: jest.fn(), count: jest.fn(), update: jest.fn() },
+    goalContribution: { create: jest.fn(), findFirst: jest.fn(), findMany: jest.fn(), update: jest.fn() }
   };
   let transactionCalls = 0;
   function transaction<T>(callback: (transaction: FinancialTransactionPort) => Promise<T>): Promise<T>;

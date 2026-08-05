@@ -11,8 +11,9 @@ import { UsersModule } from "./modules/users/users.module.js";
 import { TransactionsModule } from "./modules/transactions/transactions.module.js";
 import { TransfersModule } from "./modules/transfers/transfers.module.js";
 import { BudgetsModule } from "./modules/budgets/budgets.module.js";
+import { GoalsModule } from "./modules/goals/goals.module.js";
 
 @Module({
-  imports: [AppConfigModule, PrismaModule, AuditModule, UsersModule, AuthModule, AccountsModule, CategoriesModule, TransactionsModule, TransfersModule, BudgetsModule, HealthModule]
+  imports: [AppConfigModule, PrismaModule, AuditModule, UsersModule, AuthModule, AccountsModule, CategoriesModule, TransactionsModule, TransfersModule, BudgetsModule, GoalsModule, HealthModule]
 })
 export class AppModule {}
