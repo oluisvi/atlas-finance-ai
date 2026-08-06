@@ -7,7 +7,7 @@ interface AuditEventInput {
   actorUserId?: string;
   entityId?: string;
   entityType?: string;
-  eventType: "LOGIN_SUCCESS" | "LOGIN_FAILED" | "LOGOUT" | "ENTITY_CREATED" | "ENTITY_UPDATED" | "ENTITY_DELETED" | "SECURITY_EVENT";
+  eventType: "LOGIN_SUCCESS" | "LOGIN_FAILED" | "LOGOUT" | "ENTITY_CREATED" | "ENTITY_UPDATED" | "ENTITY_DELETED" | "IMPORT_COMPLETED" | "SECURITY_EVENT";
   ipAddress?: string;
   metadata?: Record<string, unknown>;
   riskLevel?: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
