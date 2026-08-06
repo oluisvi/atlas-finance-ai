@@ -8,4 +8,18 @@ Savings uses confirmed income/expense. Budget Control uses the same confirmed ex
 
 Classifications use only `CRITICAL`, `ATTENTION`, `GOOD` and `EXCELLENT`. Factors and recommendations are structured codes, never AI-generated narrative. The score entities remain available for future explicit snapshot/history jobs, but this endpoint does not persist.
 
-Risk: the endpoint calculates live aggregates and should gain load tests and possibly cache invalidation when traffic justifies it. Future AI Insights may consume the structured factors and recommendations, not calculate the score.
+## Read Port And Testing
+
+The service reads through `FinancialHealthDatabasePort`, implemented by `FinancialHealthDatabaseAdapter`. The port exposes only seven score-oriented read operations: currencies, confirmed cash flow, active non-emergency goals, emergency fund plan, current balance, budget limits, and confirmed category spending. `FinancialHealthDatabaseMock` provides strict Jest mocks for precisely those operations, so the test suite has no Supabase dependency and no permissive Prisma-client mock.
+
+The dedicated suite contains 21 tests across constants, service and controller. It covers explicit insufficient data, authenticated-user scoping, BRL/USD separation, Decimal-based savings/goal/net-worth values, budget use at 79%, 80%, 100%, 120% and 150%, multiple exceeded limits, emergency-fund coverage, transfer exclusion by the read predicate, schema classifications, invalid periods and controller delegation.
+
+## Smoke And Validation
+
+The final local smoke started NestJS against the configured remote Supabase PostgreSQL instance. `GET /api/v1/health`, `GET /api/v1/health/readiness`, and authenticated `GET /api/v1/financial-health` requests with and without `currency` all returned HTTP 200. Tokens, credentials and connection strings were not recorded. A controlled smoke user was created only to authenticate the protected endpoint; no financial records were inserted.
+
+The smoke identified one infrastructure defect: the new Prisma adapter needed the project's explicit `@Inject(PrismaService)` token. It was corrected before the successful rerun. No financial rule, schema, migration, RLS policy, Supabase Auth integration or score persistence was changed.
+
+## Remaining Risks
+
+The endpoint calculates live aggregates. Add load tests and cache invalidation only once production traffic justifies them. Future AI Insights may consume the structured factors and recommendation codes, but must not recalculate or overwrite the deterministic score.
