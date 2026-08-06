@@ -1,0 +1,5 @@
+import type { Prisma } from "@prisma/client"; import type { FinancialHealthDatabasePort } from "../modules/financial-health/financial-health-database.port.js";
+type Mocked<T, K extends keyof T> = { [P in K]: T[P] extends (...args: never[]) => unknown ? jest.MockedFunction<T[P]> : never };
+type Client = Prisma.TransactionClient;
+export interface FinancialHealthDatabaseMock extends FinancialHealthDatabasePort { transaction: Mocked<Client["transaction"], "groupBy">; goal: Mocked<Client["goal"], "findMany">; emergencyFundPlan: Mocked<Client["emergencyFundPlan"], "findFirst">; account: Mocked<Client["account"], "aggregate" | "findMany">; monthlyBudget: Mocked<Client["monthlyBudget"], "findMany">; }
+export function createFinancialHealthDatabaseMock(): FinancialHealthDatabaseMock { return { transaction: { groupBy: jest.fn() }, goal: { findMany: jest.fn() }, emergencyFundPlan: { findFirst: jest.fn() }, account: { aggregate: jest.fn(), findMany: jest.fn() }, monthlyBudget: { findMany: jest.fn() } }; }

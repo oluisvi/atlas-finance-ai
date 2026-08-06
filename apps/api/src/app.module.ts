@@ -14,8 +14,9 @@ import { BudgetsModule } from "./modules/budgets/budgets.module.js";
 import { GoalsModule } from "./modules/goals/goals.module.js";
 import { RecurringTransactionsModule } from "./modules/recurring-transactions/recurring-transactions.module.js";
 import { DashboardModule } from "./modules/dashboard/dashboard.module.js";
+import { FinancialHealthModule } from "./modules/financial-health/financial-health.module.js";
 
 @Module({
-  imports: [AppConfigModule, PrismaModule, AuditModule, UsersModule, AuthModule, AccountsModule, CategoriesModule, TransactionsModule, TransfersModule, BudgetsModule, GoalsModule, RecurringTransactionsModule, DashboardModule, HealthModule]
+  imports: [AppConfigModule, PrismaModule, AuditModule, UsersModule, AuthModule, AccountsModule, CategoriesModule, TransactionsModule, TransfersModule, BudgetsModule, GoalsModule, RecurringTransactionsModule, DashboardModule, FinancialHealthModule, HealthModule]
 })
 export class AppModule {}

@@ -1,0 +1,4 @@
+import { Inject, Injectable } from "@nestjs/common";
+import { PrismaService } from "../prisma/prisma.service.js";
+import type { FinancialHealthDatabasePort } from "./financial-health-database.port.js";
+@Injectable() export class FinancialHealthDatabaseAdapter implements FinancialHealthDatabasePort { constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {} get transaction(): FinancialHealthDatabasePort["transaction"] { return this.prisma.transaction; } get goal(): FinancialHealthDatabasePort["goal"] { return this.prisma.goal; } get emergencyFundPlan(): FinancialHealthDatabasePort["emergencyFundPlan"] { return this.prisma.emergencyFundPlan; } get account(): FinancialHealthDatabasePort["account"] { return this.prisma.account; } get monthlyBudget(): FinancialHealthDatabasePort["monthlyBudget"] { return this.prisma.monthlyBudget; } }
