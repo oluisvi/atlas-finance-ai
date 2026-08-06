@@ -27,3 +27,9 @@ The local API was started on port 3001 because port 3000 was occupied by an unre
 ## Remaining Work And Risks
 
 The generic CSV parser intentionally requires canonical headers and does not yet reparse persisted input after a mapping change; quoted-field CSV, configurable date/decimal formats, per-line recovery, robust OFX XML variants, batch/item test suites and a full OFX/deduplication smoke remain follow-up work. The batch schema lacks a dedicated mapping column and a user/account/fingerprint unique constraint for cross-batch idempotency; a future reviewed migration should add purpose-built metadata/index support if high-volume imports are required.
+
+## Duplicate Upload Regression
+
+The smoke test exposed PostgreSQL unique-constraint error `P2002` for a second upload with the same `userId`, account and file hash. `ImportsService` now converts that database error into HTTP 409 with `IMPORT_FILE_ALREADY_UPLOADED`; it does not create a second batch, transaction or balance change. The corrected CSV duplicate smoke returned 409, while CSV and OFX first uploads each completed successfully and foreign-user batch access returned 404.
+
+The full validation run passed Prisma validation/generation, typecheck, 17 Jest suites with 136 tests, lint, build and `git diff --check`. The P2002 behavior has real HTTP smoke coverage; adding a direct unit regression for the Prisma error object remains advisable because the existing service suite currently focuses on confirmation, not upload creation.
