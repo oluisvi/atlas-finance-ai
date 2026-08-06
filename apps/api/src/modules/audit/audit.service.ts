@@ -1,4 +1,5 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
+import type { AuditEventType, RiskLevel } from "@prisma/client";
 
 import { PrismaService } from "../prisma/prisma.service.js";
 
@@ -7,10 +8,10 @@ interface AuditEventInput {
   actorUserId?: string;
   entityId?: string;
   entityType?: string;
-  eventType: "LOGIN_SUCCESS" | "LOGIN_FAILED" | "LOGOUT" | "ENTITY_CREATED" | "ENTITY_UPDATED" | "ENTITY_DELETED" | "IMPORT_COMPLETED" | "SECURITY_EVENT";
+  eventType: AuditEventType;
   ipAddress?: string;
   metadata?: Record<string, unknown>;
-  riskLevel?: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+  riskLevel?: RiskLevel;
   userAgent?: string;
   userId?: string;
 }
