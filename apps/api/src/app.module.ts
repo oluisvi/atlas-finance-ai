@@ -17,8 +17,9 @@ import { DashboardModule } from "./modules/dashboard/dashboard.module.js";
 import { FinancialHealthModule } from "./modules/financial-health/financial-health.module.js";
 import { ImportsModule } from "./modules/imports/imports.module.js";
 import { ReportsModule } from "./modules/reports/reports.module.js";
+import { ExportsModule } from "./modules/exports/exports.module.js";
 
 @Module({
-  imports: [AppConfigModule, PrismaModule, AuditModule, UsersModule, AuthModule, AccountsModule, CategoriesModule, TransactionsModule, TransfersModule, BudgetsModule, GoalsModule, RecurringTransactionsModule, DashboardModule, FinancialHealthModule, ImportsModule, ReportsModule, HealthModule]
+  imports: [AppConfigModule, PrismaModule, AuditModule, UsersModule, AuthModule, AccountsModule, CategoriesModule, TransactionsModule, TransfersModule, BudgetsModule, GoalsModule, RecurringTransactionsModule, DashboardModule, FinancialHealthModule, ImportsModule, ReportsModule, ExportsModule, HealthModule]
 })
 export class AppModule {}

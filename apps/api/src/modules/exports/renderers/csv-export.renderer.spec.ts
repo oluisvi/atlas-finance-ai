@@ -1,0 +1,3 @@
+import { ExportReportType } from "../exports.constants.js";
+import { CsvExportRenderer } from "./csv-export.renderer.js";
+describe("CsvExportRenderer", () => { it("writes UTF-8 CSV with BOM, escaping, and formula protection", async () => { const file = await new CsvExportRenderer().render({ reportType: ExportReportType.ACCOUNTS, filenameStem: "atlas-accounts", generatedAt: new Date("2026-01-01T00:00:00Z"), currency: "BRL", tables: [{ title: "accounts", headers: ["name", "balance"], rows: [["=danger, \"quoted\"", "-10.0000"]] }] }); const content = file.buffer.toString("utf8"); expect(content.startsWith("\uFEFF")).toBe(true); expect(content).toContain("'=danger"); expect(content).toContain("-10.0000"); expect(file.filename).toBe("atlas-accounts.csv"); }); });
