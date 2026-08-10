@@ -9,7 +9,7 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "api:generate": "openapi-typescript http://localhost:3010/api/docs-json -o src/lib/api/schema.d.ts"
+    "api:generate": "openapi-typescript http://localhost:3000/api/docs-json -o src/lib/api/schema.d.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "latest",
