@@ -1,59 +1,54 @@
-# Deploy no Render
+# Preview no Render
 
-O Atlas Finance AI é publicado no Render como dois Web Services Node a partir da raiz do monorepo. O PostgreSQL permanece no Supabase; não há banco, migration, Redis ou Supabase Auth no Render.
+O Atlas usa dois Web Services Node no Render e mantém o PostgreSQL no Supabase. O Next.js é dinâmico e não usa static export.
 
-## Blueprint
+## Topologia e Blueprint
 
-O arquivo [`render.yaml`](../render.yaml) cria os serviços `atlas-finance-api` e `atlas-finance-web`, ambos na branch `main`, plano `free` e com deploy automático em cada commit (`autoDeployTrigger: commit`). O diretório raiz é usado nos dois casos: a API depende do `package.json`, lockfile e Prisma da raiz; o web mantém seu próprio lockfile em `apps/web`.
+`GitHub → atlas-finance-web (Next.js) → atlas-finance-api (NestJS) → Supabase PostgreSQL`
 
-| Serviço | Build | Start | Health check |
+O `render.yaml` na raiz cria os serviços na branch `main`, com auto deploy por commit e filtros de build para o monorepo. A raiz do repositório permanece acessível aos dois builds.
+
+| Serviço | Build | Start | Health |
 | --- | --- | --- | --- |
-| `atlas-finance-api` | `npm ci && npm run prisma:generate && npm run build:api` | `npm run start:api:prod` | `/api/v1/health/readiness` |
-| `atlas-finance-web` | `npm --prefix apps/web ci && npm run build:web` | `npm run start:web:prod` | padrão do Render |
+| API | `npm ci && npm run prisma:generate && npm run build:api` | `npm run start:api:prod` | `/api/v1/health/readiness` |
+| Web | `npm --prefix apps/web ci && npm run build:web` | `npm run start:web:prod` | HTTP do Next.js |
 
-Os dois serviços usam Node 22.14.0. A API usa `PORT` quando o provedor a define (mantendo `API_PORT` para uso local) e escuta em `0.0.0.0`.
+A API lê `PORT` e escuta `0.0.0.0`. O web executa `next start -p $PORT`. Swagger fica desabilitado em produção.
 
-## Variáveis do Render
+## Campos obrigatórios no Render
 
-No serviço **API**, preencha estes secrets no dashboard do Render — eles não são versionados:
+API:
 
-| Variável | Tipo | Observação |
-| --- | --- | --- |
-| `DATABASE_URL` | secret | URI do Supabase Transaction Pooler usada em runtime. |
-| `JWT_ACCESS_SECRET` | secret | Mínimo de 32 caracteres. |
-| `JWT_REFRESH_SECRET` | secret | Mínimo de 32 caracteres e diferente da access secret. |
-| `CORS_ORIGIN` | configuração de ambiente | URL HTTPS exata do Web Service, sem barra final. |
+| Campo | Valor |
+| --- | --- |
+| `DATABASE_URL` | URI real do Supabase Transaction Pooler |
+| `JWT_ACCESS_SECRET` | segredo aleatório com pelo menos 32 caracteres |
+| `JWT_REFRESH_SECRET` | segredo diferente, com pelo menos 32 caracteres |
+| `CORS_ORIGIN` | URL HTTPS exata do web, sem barra final |
 
-O blueprint configura estes valores não secretos: `NODE_ENV=production`, `SWAGGER_ENABLED=false`, `JWT_ACCESS_TTL=15m`, `JWT_REFRESH_TTL=30d`, `JWT_ISSUER=atlas-finance-ai` e `JWT_AUDIENCE=atlas-finance-ai`.
+Web:
 
-`DIRECT_URL` não é necessário no runtime, pois esta fase não executa migrations. `API_PORT`, `API_PREFIX`, `API_VERSION`, `DATABASE_POOL_MAX`, `RATE_LIMIT_DEFAULT`, `JSON_BODY_LIMIT` e `URLENCODED_BODY_LIMIT` possuem defaults validados no código.
+| Campo | Valor |
+| --- | --- |
+| `NEXT_PUBLIC_API_URL` | `https://<api-real>.onrender.com/api/v1` |
 
-No serviço **Web**, configure `NEXT_PUBLIC_API_URL` como `https://<url-real-da-api>/api/v1`. Como a variável entra no bundle no build, alterá-la exige novo deploy do web.
+Nunca coloque segredos no Blueprint. `NEXT_PUBLIC_` é público e não deve conter credenciais.
 
-## Provisionamento
+## Provisionamento humano restante
 
-1. Faça commit e push de `render.yaml` para `main`.
-2. No Render, abra **New → Blueprint**, conecte o GitHub e escolha `oluisvi/atlas-finance-ai`.
-3. Crie os dois serviços detectados pelo Blueprint e informe `DATABASE_URL`, `JWT_ACCESS_SECRET` e `JWT_REFRESH_SECRET` na API.
-4. Copie a URL pública da API e defina `NEXT_PUBLIC_API_URL` no Web como `<url-da-api>/api/v1`; faça deploy manual do web.
-5. Copie a URL pública do web e configure `CORS_ORIGIN` na API com essa origem exata; faça deploy manual da API e, por segurança, mais um deploy do web.
+1. Entre no Render e escolha **New → Blueprint**.
+2. Conecte o GitHub e selecione este repositório.
+3. Confirme os dois serviços do `render.yaml`.
+4. Preencha os três secrets da API.
+5. Após a primeira URL da API, configure `NEXT_PUBLIC_API_URL` e redeploy do web.
+6. Após a URL do web, configure `CORS_ORIGIN` e redeploy da API.
 
-Não use `*`, padrões `*.onrender.com` ou uma URL com `/api/v1` em `CORS_ORIGIN`. Swagger fica desabilitado em produção; health continua público.
+Não use wildcard no CORS. No plano free, serviços dormem após inatividade e o primeiro acesso pode sofrer cold start; não há ping artificial.
 
-## Verificação pós-deploy
+## Smoke público
 
-```text
-GET https://<api>/api/v1/health            -> 200
-GET https://<api>/api/v1/health/liveness   -> 200
-GET https://<api>/api/v1/health/readiness  -> 200
-GET https://<api>/api/docs                 -> 404 (Swagger desabilitado)
-GET https://<web>/                         -> 200
-```
+Validar web, `/health`, `/health/liveness`, `/health/readiness`, register, login, `/auth/me`, refresh, dashboard, transações, imports, relatórios, insights, CORS e mobile/PWA. Não usar dados pessoais. O deploy não foi executado nesta fase porque o ambiente não possui sessão autenticada do Render.
 
-No web, faça register, login, `/auth/me`, refresh e logout; crie conta e transação e confira Dashboard, Financial Health, Insights e Report. Valide também em viewport mobile. Uma origem fora da allowlist deve falhar no CORS.
+## Diagnóstico
 
-## OpenAPI e diagnóstico
-
-`npm run api:generate` produz `apps/api/openapi.json` com os metadados Nest sem subir uma API ou conectar no Supabase e gera `apps/web/src/lib/api/schema.d.ts` a partir desse arquivo. Portanto o build no Render não depende de `localhost`.
-
-No plano free os serviços podem dormir por inatividade e API e web podem acordar separadamente. A primeira chamada após idle pode demorar; não há keep-alive artificial. Consulte os logs de cada serviço no Render para falhas de build, environment ou readiness.
+Falha de build web: confirme Node 22 e `NEXT_PUBLIC_API_URL` no build. Falha de startup API: confira `DATABASE_URL`, secrets, CORS e logs de validação. Readiness falha quando o PostgreSQL não está acessível. Alteração de variável pública exige rebuild do web.

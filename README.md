@@ -24,7 +24,7 @@ Plataforma full-stack de finanças pessoais que transforma registros financeiros
 
 O Atlas Finance AI nasce de uma ideia simples: registrar gastos não é suficiente. Um produto financeiro útil precisa organizar a informação, preservar a integridade dos números, explicar o cenário atual e criar um caminho seguro entre **dados**, **entendimento** e **ação**.
 
-Hoje, na **Fase 9**, o repositório contém uma V1 full-stack funcional:
+Hoje, na **Fase 10**, o repositório contém uma V1 full-stack funcional com experiência Atlas Mineral, acessibilidade baseline, PWA segura e preview Render preparado:
 
 - backend modular e hardened em NestJS;
 - frontend responsivo em Next.js;
@@ -36,7 +36,7 @@ Hoje, na **Fase 9**, o repositório contém uma V1 full-stack funcional:
 - Financial Health Score e insights determinísticos explicáveis;
 - 301 testes automatizados entre backend e frontend.
 
-O nome preserva a visão de longo prazo do produto, mas a versão atual **não usa IA generativa**. Os insights existentes são derivados de regras determinísticas, auditáveis e testáveis. IA, PWA, notificações, Redis/workers e CI/CD pertencem a fases futuras. O deploy no Render está preparado no repositório; consulte [Deployment](docs/DEPLOYMENT.md).
+O nome preserva a visão de longo prazo do produto, mas a versão atual **não usa IA generativa**. Os insights existentes são derivados de regras determinísticas, auditáveis e testáveis. PWA está implementada sem persistir respostas financeiras autenticadas. IA, notifications engine, Redis/workers e scheduler pertencem a fases futuras. O deploy no Render está pronto para provisionamento; consulte [Deployment](docs/DEPLOYMENT.md).
 
 ### Da organização à decisão
 
@@ -533,7 +533,11 @@ Os relatórios de implementação funcionam como memória de engenharia: registr
 | Insights determinísticos | ✅ Concluído |
 | OpenAPI/Swagger e cliente tipado | ✅ Concluído |
 | Frontend web Next.js V1 | ✅ Concluído |
-| PWA e acessibilidade aprofundada | ⏳ Próxima fase |
+| Frontend V1 | ✅ |
+| UX/UI refinement — Atlas Mineral | ✅ |
+| Accessibility baseline | ✅ |
+| PWA | ✅ |
+| Preview deployment | 🟡 deployment-ready; falta autenticar/conectar o Render |
 | E2E completo | 🔜 Planejado |
 | Observabilidade, CI/CD e deploy | 🔜 Planejado |
 | Redis, workers e notificações | 🔭 Futuro |

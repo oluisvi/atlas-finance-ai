@@ -1,5 +1,21 @@
 # Atlas Finance AI - Architecture
 
+## Fase 10 — PWA e topologia de preview
+
+```text
+PWA Next.js (Render Web Service)
+        |
+        v
+NestJS API (Render Web Service)
+        |
+        v
+PostgreSQL (Supabase)
+```
+
+O frontend inclui manifest, metadata, ícone e service worker. O worker mantém somente a página offline neutra e assets estáticos do mesmo domínio; respostas financeiras autenticadas e chamadas à API usam rede e nunca são persistidas offline. O Next.js permanece dinâmico e executa como Web Service.
+
+O `render.yaml` usa a raiz do monorepo para preservar workspaces e arquivos compartilhados, cria `atlas-finance-web` e `atlas-finance-api`, configura readiness em `/api/v1/health/readiness`, auto deploy da branch `main` e filtros de build. A API escuta `process.env.PORT` em `0.0.0.0`. O PostgreSQL não migra para o Render e continua no Supabase.
+
 ## Frontend V1 implementado
 
 ```text

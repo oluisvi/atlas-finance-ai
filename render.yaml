@@ -5,6 +5,16 @@ services:
     plan: free
     branch: main
     autoDeployTrigger: commit
+    buildFilter:
+      paths:
+        - apps/api/**
+        - packages/**
+        - prisma/**
+        - scripts/**
+        - package.json
+        - package-lock.json
+        - tsconfig.json
+        - tsconfig.build.json
     buildCommand: npm ci && npm run prisma:generate && npm run build:api
     startCommand: npm run start:api:prod
     healthCheckPath: /api/v1/health/readiness
@@ -38,6 +48,13 @@ services:
     plan: free
     branch: main
     autoDeployTrigger: commit
+    buildFilter:
+      paths:
+        - apps/web/**
+        - apps/api/openapi.json
+        - packages/**
+        - package.json
+        - package-lock.json
     buildCommand: npm --prefix apps/web ci && npm run build:web
     startCommand: npm run start:web:prod
     envVars:
