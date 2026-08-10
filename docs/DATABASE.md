@@ -1205,3 +1205,8 @@ Regras:
 A modelagem proposta cobre o MVP com autenticação, contas, categorias, transações, transferências, orçamento, metas, reserva de emergência, score financeiro, insights, notificações, auditoria e importação CSV/OFX.
 
 O desenho prioriza segurança, auditabilidade, performance de dashboard e capacidade de evolução. O ponto arquitetural mais importante é separar dados transacionais de dados derivados: transações, contas, metas e orçamentos são a fonte de verdade; dashboards, score e insights são projeções recalculáveis e versionadas.
+# Revisão de hardening V1
+
+As queries críticas foram revisadas para ownership, soft delete, ordenação estável, paginação limitada, selects delimitados e ausência de N+1 óbvio. Dinheiro permanece em `DECIMAL(19,4)` via `Prisma.Decimal`; transações financeiras e estratégias Serializable/retry existentes foram preservadas. O pool é configurável e encerrado no lifecycle do Nest.
+
+Nenhum schema ou migration foi alterado. Para uma migration futura, validar com `EXPLAIN (ANALYZE, BUFFERS)` índices parciais para transactions `(user_id, transaction_date, id) WHERE deleted_at IS NULL`, imports/insights `(user_id, status, created_at, id)` e recurring `(user_id, next_occurrence_date, id) WHERE deleted_at IS NULL`. Tuning final depende de volume e ambiente de produção.

@@ -273,10 +273,10 @@ export class AuthService {
   async validateAccessToken(accessToken: string): Promise<AuthenticatedUser> {
     const payload = await this.verifyToken(accessToken, "access");
     const session = await this.prisma.authSession.findUnique({
-      select: { revokedAt: true, status: true, userId: true },
+      include: { user: { select: { deletedAt: true, status: true } } },
       where: { id: payload.sid }
     });
-    if (!session || session.userId !== payload.sub || session.status !== SESSION_ACTIVE || session.revokedAt) {
+    if (!session || session.userId !== payload.sub || session.status !== SESSION_ACTIVE || session.revokedAt || session.user.deletedAt || session.user.status !== USER_STATUS_ACTIVE) {
       throw this.invalidToken();
     }
     return { id: payload.sub, sessionId: payload.sid };

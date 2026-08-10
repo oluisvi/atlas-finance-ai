@@ -5,8 +5,10 @@ export interface AppConfiguration {
     apiPrefix: string;
     apiVersion: string;
     corsOrigins: string[];
+    jsonBodyLimit: string;
     nodeEnv: NodeEnvironment;
     port: number;
+    urlEncodedBodyLimit: string;
   };
   database: {
     directUrl?: string;
@@ -20,5 +22,9 @@ export interface AppConfiguration {
     issuer: string;
     refreshSecret: string;
     refreshTtl: string;
+  };
+  throttling: {
+    defaultLimit: number;
+    defaultTtlMs: number;
   };
 }

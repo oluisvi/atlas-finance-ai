@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, Inject, Param, ParseUUIDPipe, Patch, Post, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Get, HttpCode, Inject, Param, ParseUUIDPipe, Patch, Post, UseGuards, ValidationPipe } from "@nestjs/common";
 import { CurrentUser } from "../auth/decorators/current-user.decorator.js";
 import type { AuthenticatedUser } from "../auth/auth.types.js";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard.js";
@@ -8,7 +8,7 @@ import { UpdateCategoryDto } from "./dto/update-category.dto.js";
 @Controller("categories") @UseGuards(JwtAuthGuard)
 export class CategoriesController {
   constructor(@Inject(CategoriesService) private readonly categoriesService: CategoriesService) {}
-  @Post() create(@CurrentUser() user: AuthenticatedUser, @Body() dto: CreateCategoryDto) { return this.categoriesService.create(user.id, dto); }
+  @Post() create(@CurrentUser() user: AuthenticatedUser, @Body(new ValidationPipe({ forbidNonWhitelisted: true, transform: true, whitelist: true })) dto: CreateCategoryDto) { return this.categoriesService.create(user.id, dto); }
   @Get() list(@CurrentUser() user: AuthenticatedUser) { return this.categoriesService.list(user.id); }
   @Get(":id") findOne(@CurrentUser() user: AuthenticatedUser, @Param("id", new ParseUUIDPipe({ version: "4" })) id: string) { return this.categoriesService.findOne(user.id, id); }
   @Patch(":id") update(@CurrentUser() user: AuthenticatedUser, @Param("id", new ParseUUIDPipe({ version: "4" })) id: string, @Body() dto: UpdateCategoryDto) { return this.categoriesService.update(user.id, id, dto); }

@@ -1515,3 +1515,6 @@ Até que uma licença seja adicionada ao repositório, todos os direitos permane
 **Reliable financial rules. Clear indicators. Intelligent decisions.**
 
 </div>
+# Status do backend V1
+
+Backend Hardening (Fase 7): concluído. O backend V1 está hardened e pronto para integração com frontend; deploy, infraestrutura distribuída, OpenAPI e load testing dedicado permanecem fases separadas.

@@ -1,5 +1,7 @@
 import { Body, Controller, Get, HttpCode, Inject, Post, Req, UseGuards } from "@nestjs/common";
 import type { Request } from "express";
+import { Throttle } from "@nestjs/throttler";
+import { AUTH_RATE_LIMITS } from "../../config/throttling.constants.js";
 
 import { CurrentUser } from "./decorators/current-user.decorator.js";
 import { LoginDto } from "./dto/login.dto.js";
@@ -23,18 +25,21 @@ export class AuthController {
   constructor(@Inject(AuthService) private readonly authService: AuthService) {}
 
   @Post("register")
+  @Throttle({ default: AUTH_RATE_LIMITS.register })
   async register(@Body() dto: RegisterDto, @Req() request: Request) {
     return this.authService.register(dto, requestMetadata(request));
   }
 
   @HttpCode(200)
   @Post("login")
+  @Throttle({ default: AUTH_RATE_LIMITS.login })
   async login(@Body() dto: LoginDto, @Req() request: Request) {
     return this.authService.login(dto, requestMetadata(request));
   }
 
   @HttpCode(200)
   @Post("refresh")
+  @Throttle({ default: AUTH_RATE_LIMITS.refresh })
   async refresh(@Body() dto: RefreshTokenDto, @Req() request: Request) {
     return this.authService.refresh(dto.refreshToken, requestMetadata(request));
   }

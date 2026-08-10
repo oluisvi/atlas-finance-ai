@@ -1,5 +1,5 @@
 import { Transform } from "class-transformer";
-import { IsInt, IsOptional, IsString, IsUUID, Length, Max, Min } from "class-validator";
+import { IsISO8601, IsInt, IsOptional, IsString, IsUUID, Length, Max, Min } from "class-validator";
 
 export class ReportsQueryDto {
   @IsOptional()
@@ -16,11 +16,11 @@ export class ReportsQueryDto {
   categoryId?: string;
 
   @IsOptional()
-  @IsString()
+  @IsISO8601({ strict: true })
   startDate?: string;
 
   @IsOptional()
-  @IsString()
+  @IsISO8601({ strict: true })
   endDate?: string;
 
   @IsOptional()

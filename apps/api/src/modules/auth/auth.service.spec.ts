@@ -175,4 +175,16 @@ describe("AuthService", () => {
     await expect(service.validateAccessToken(login.tokens.accessToken)).rejects.toMatchObject({ status: 401 });
     await expect(service.validateAccessToken("")).rejects.toMatchObject({ status: 401 });
   });
+
+  it("rejects an otherwise valid access token after the user is disabled or deleted", async () => {
+    const { service, users } = createHarness();
+    await service.register(registration, {});
+    const login = await service.login({ email: registration.email, password: registration.password }, {});
+    const user = [...users.values()][0]!;
+    user.status = "DISABLED";
+    await expect(service.validateAccessToken(login.tokens.accessToken)).rejects.toMatchObject({ status: 401 });
+    user.status = "ACTIVE";
+    user.deletedAt = new Date();
+    await expect(service.validateAccessToken(login.tokens.accessToken)).rejects.toMatchObject({ status: 401 });
+  });
 });

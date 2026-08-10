@@ -998,3 +998,8 @@ Fluxos que devem ter tracing:
 A arquitetura proposta organiza o Atlas Finance AI em uma API NestJS modular, um banco PostgreSQL transacional, Redis para performance e orquestracao assíncrona, e FastAPI como servico especializado de IA.
 
 O desenho preserva seguranca, auditabilidade e escalabilidade. O ponto central e separar dados financeiros transacionais de dados derivados: contas, transacoes, metas e orcamentos sao a base confiavel; dashboard, score e insights sao projecoes recalculaveis, cacheaveis e versionadas.
+# Request pipeline V1 hardened
+
+O request pipeline efetivo é: CORS allowlist → request/correlation ID e no-store → limites de body → Helmet → throttling global/específico → JWT/session guard → ValidationPipe estrito → controller/service → filtro global sanitizado. Logs HTTP registram somente request ID, método, path, status e duração; bodies financeiros, tokens e secrets não são registrados.
+
+O Nest habilita shutdown hooks. `PrismaService` abre um pool PostgreSQL limitado no startup, conecta explicitamente, atende readiness com query mínima e encerra Prisma e pool no shutdown. Liveness permanece independente do banco.

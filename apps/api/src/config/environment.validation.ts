@@ -64,6 +64,7 @@ export function validateEnvironment(env: Environment): Environment {
 
   assertIntegerInRange("API_PORT", env.API_PORT ?? "3000", 1, 65535);
   assertIntegerInRange("DATABASE_POOL_MAX", env.DATABASE_POOL_MAX ?? "10", 1, 50);
+  assertIntegerInRange("RATE_LIMIT_DEFAULT", env.RATE_LIMIT_DEFAULT ?? "120", 1, 10_000);
   assertPostgresUrl("DATABASE_URL", env.DATABASE_URL, true);
   assertPostgresUrl("DIRECT_URL", env.DIRECT_URL, false);
   assertSecret("JWT_ACCESS_SECRET", env.JWT_ACCESS_SECRET);
@@ -73,6 +74,15 @@ export function validateEnvironment(env: Environment): Environment {
 
   if (!env.JWT_ISSUER || !env.JWT_AUDIENCE) {
     throw new Error("JWT_ISSUER and JWT_AUDIENCE are required");
+  }
+
+  if (nodeEnv === "production" && (!env.CORS_ORIGIN || env.CORS_ORIGIN.trim() === "")) {
+    throw new Error("CORS_ORIGIN is required in production");
+  }
+
+  for (const name of ["JSON_BODY_LIMIT", "URLENCODED_BODY_LIMIT"] as const) {
+    const value = env[name] ?? (name === "JSON_BODY_LIMIT" ? "256kb" : "64kb");
+    if (!/^\d+(?:kb|mb)$/.test(value)) throw new Error(`${name} must use a positive kb or mb value`);
   }
 
   return {

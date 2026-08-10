@@ -17,8 +17,10 @@ export const appConfig = registerAs("app", () => ({
   apiPrefix: process.env.API_PREFIX ?? "api",
   apiVersion: process.env.API_VERSION ?? "1",
   corsOrigins: parseCorsOrigins(process.env.CORS_ORIGIN),
+  jsonBodyLimit: process.env.JSON_BODY_LIMIT ?? "256kb",
   nodeEnv: (process.env.NODE_ENV ?? "development") as NodeEnvironment,
-  port: Number.parseInt(process.env.API_PORT ?? "3000", 10)
+  port: Number.parseInt(process.env.API_PORT ?? "3000", 10),
+  urlEncodedBodyLimit: process.env.URLENCODED_BODY_LIMIT ?? "64kb"
 }));
 
 export const databaseConfig = registerAs("database", () => ({
@@ -34,4 +36,9 @@ export const authConfig = registerAs("auth", () => ({
   issuer: process.env.JWT_ISSUER ?? "atlas-finance-ai",
   refreshSecret: process.env.JWT_REFRESH_SECRET ?? "",
   refreshTtl: process.env.JWT_REFRESH_TTL ?? process.env.JWT_REFRESH_EXPIRES_IN ?? "30d"
+}));
+
+export const throttlingConfig = registerAs("throttling", () => ({
+  defaultLimit: Number.parseInt(process.env.RATE_LIMIT_DEFAULT ?? "120", 10),
+  defaultTtlMs: 60_000
 }));
