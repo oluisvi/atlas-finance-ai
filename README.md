@@ -36,7 +36,7 @@ Hoje, na **Fase 9**, o repositório contém uma V1 full-stack funcional:
 - Financial Health Score e insights determinísticos explicáveis;
 - 301 testes automatizados entre backend e frontend.
 
-O nome preserva a visão de longo prazo do produto, mas a versão atual **não usa IA generativa**. Os insights existentes são derivados de regras determinísticas, auditáveis e testáveis. IA, PWA, notificações, Redis/workers, CI/CD e deploy pertencem a fases futuras.
+O nome preserva a visão de longo prazo do produto, mas a versão atual **não usa IA generativa**. Os insights existentes são derivados de regras determinísticas, auditáveis e testáveis. IA, PWA, notificações, Redis/workers e CI/CD pertencem a fases futuras. O deploy no Render está preparado no repositório; consulte [Deployment](docs/DEPLOYMENT.md).
 
 ### Da organização à decisão
 
@@ -404,11 +404,13 @@ npm run prisma:validate
 npm run prisma:generate
 ```
 
-Para regenerar o cliente OpenAPI, primeiro execute a API com Swagger habilitado e depois rode:
+Para regenerar o cliente OpenAPI, execute:
 
 ```bash
 npm run api:generate
 ```
+
+O comando gera o documento a partir dos metadados Nest sem iniciar uma API ou acessar o banco e atualiza os tipos do web. Isso também o torna reproduzível em CI.
 
 ### Executar API e frontend
 

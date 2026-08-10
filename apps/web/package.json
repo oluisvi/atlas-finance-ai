@@ -6,10 +6,11 @@
     "dev": "next dev -p 3001",
     "build": "next build",
     "start": "next start -p 3001",
+    "start:prod": "next start -p $PORT",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "api:generate": "openapi-typescript http://localhost:3000/api/docs-json -o src/lib/api/schema.d.ts"
+    "api:generate": "openapi-typescript ../api/openapi.json -o src/lib/api/schema.d.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "latest",

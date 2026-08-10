@@ -17,7 +17,10 @@ async function bootstrap(): Promise<void> {
   configureApplication(app, config);
   configureSwagger(app, config.get("app.swaggerEnabled", { infer: true }));
 
-  await app.listen(config.get("app.port", { infer: true }));
+  // Render injects the public listener port through PORT. API_PORT remains
+  // available for local development and other self-hosted deployments.
+  const port = Number.parseInt(process.env.PORT ?? String(config.get("app.port", { infer: true })), 10);
+  await app.listen(port, "0.0.0.0");
 }
 
 void bootstrap();

@@ -1,0 +1,49 @@
+services:
+  - type: web
+    name: atlas-finance-api
+    runtime: node
+    plan: free
+    branch: main
+    autoDeployTrigger: commit
+    buildCommand: npm ci && npm run prisma:generate && npm run build:api
+    startCommand: npm run start:api:prod
+    healthCheckPath: /api/v1/health/readiness
+    envVars:
+      - key: NODE_VERSION
+        value: 22.14.0
+      - key: NODE_ENV
+        value: production
+      - key: SWAGGER_ENABLED
+        value: "false"
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_ACCESS_SECRET
+        sync: false
+      - key: JWT_REFRESH_SECRET
+        sync: false
+      - key: JWT_ACCESS_TTL
+        value: 15m
+      - key: JWT_REFRESH_TTL
+        value: 30d
+      - key: JWT_ISSUER
+        value: atlas-finance-ai
+      - key: JWT_AUDIENCE
+        value: atlas-finance-ai
+      - key: CORS_ORIGIN
+        sync: false
+
+  - type: web
+    name: atlas-finance-web
+    runtime: node
+    plan: free
+    branch: main
+    autoDeployTrigger: commit
+    buildCommand: npm --prefix apps/web ci && npm run build:web
+    startCommand: npm run start:web:prod
+    envVars:
+      - key: NODE_VERSION
+        value: 22.14.0
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_API_URL
+        sync: false
