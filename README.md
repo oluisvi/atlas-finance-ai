@@ -1517,4 +1517,11 @@ Até que uma licença seja adicionada ao repositório, todos os direitos permane
 </div>
 # Status do backend V1
 
-Backend Hardening (Fase 7): concluído. O backend V1 está hardened e pronto para integração com frontend; deploy, infraestrutura distribuída, OpenAPI e load testing dedicado permanecem fases separadas.
+Backend Hardening (Fase 7): concluído. O backend V1 está hardened e pronto para integração com frontend; deploy, infraestrutura distribuída e load testing dedicado permanecem fases separadas.
+# Backend V1 contract
+
+Backend Hardening and OpenAPI / Swagger are complete. The HTTP V1 contract is stable for frontend integration, with 86 documented operations, Bearer authentication, decimal-string money, pagination, errors, multipart imports, and binary report exports. See [API contract](docs/API.md) and [OpenAPI implementation report](docs/OPENAPI_IMPLEMENTATION_REPORT.md).
+
+Final validation: 37 test suites and 288 tests passing.
+
+Swagger UI is available at `/api/docs` and OpenAPI JSON at `/api/docs-json` when `SWAGGER_ENABLED=true`; production defaults to disabled. The next delivery phase is the frontend.

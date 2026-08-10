@@ -1,6 +1,7 @@
 import { IsEnum, IsInt, IsOptional, IsString, IsUUID, Matches, Max, MaxLength, Min } from "class-validator";
 import { Type } from "class-transformer";
 export enum ImportSourceDto { CSV = "CSV", OFX = "OFX" }
+export class MultipartUploadImportDto { @IsUUID() accountId!: string; @IsEnum(ImportSourceDto) sourceType!: ImportSourceDto; }
 export class UploadImportDto { @IsUUID() accountId!: string; @IsString() @MaxLength(255) fileName!: string; @IsEnum(ImportSourceDto) sourceType!: ImportSourceDto; @IsString() @Matches(/^[A-Za-z0-9+/=\r\n]+$/) contentBase64!: string; }
 export class ImportMappingDto { @IsOptional() @IsString() @MaxLength(80) dateColumn?: string; @IsOptional() @IsString() @MaxLength(80) descriptionColumn?: string; @IsOptional() @IsString() @MaxLength(80) amountColumn?: string; @IsOptional() @IsString() @MaxLength(20) dateFormat?: string; }
 export class ListImportsDto { @IsOptional() @IsEnum(ImportSourceDto) sourceType?: ImportSourceDto; @IsOptional() @IsUUID() accountId?: string; @IsOptional() @IsEnum(["UPLOADED","PARSED","REVIEW_REQUIRED","IMPORTED","FAILED","CANCELLED"]) status?: "UPLOADED"|"PARSED"|"REVIEW_REQUIRED"|"IMPORTED"|"FAILED"|"CANCELLED"; @IsOptional() @Type(() => Number) @IsInt() @Min(1) page?: number; @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(100) pageSize?: number; }

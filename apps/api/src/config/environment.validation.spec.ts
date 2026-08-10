@@ -31,4 +31,19 @@ describe("validateEnvironment", () => {
     expect(env.API_VERSION).toBe("1");
     expect(env.DATABASE_POOL_MAX).toBe("10");
   });
+
+  it("accepts an explicit Swagger serving flag", () => {
+    const valid = {
+      DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/postgres",
+      JWT_ACCESS_SECRET: "test-access-secret-that-is-long-enough-for-validation",
+      JWT_ACCESS_TTL: "15m",
+      JWT_AUDIENCE: "atlas-finance-ai-test",
+      JWT_ISSUER: "atlas-finance-ai-test",
+      JWT_REFRESH_SECRET: "test-refresh-secret-that-is-long-enough-for-validation",
+      JWT_REFRESH_TTL: "30d",
+      NODE_ENV: "test"
+    };
+    expect(validateEnvironment({ ...valid, SWAGGER_ENABLED: "false" }).SWAGGER_ENABLED).toBe("false");
+    expect(() => validateEnvironment({ ...valid, SWAGGER_ENABLED: "yes" })).toThrow("SWAGGER_ENABLED must be true or false");
+  });
 });

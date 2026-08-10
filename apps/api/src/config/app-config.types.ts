@@ -8,6 +8,7 @@ export interface AppConfiguration {
     jsonBodyLimit: string;
     nodeEnv: NodeEnvironment;
     port: number;
+    swaggerEnabled: boolean;
     urlEncodedBodyLimit: string;
   };
   database: {

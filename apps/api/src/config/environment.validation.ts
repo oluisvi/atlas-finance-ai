@@ -85,6 +85,10 @@ export function validateEnvironment(env: Environment): Environment {
     if (!/^\d+(?:kb|mb)$/.test(value)) throw new Error(`${name} must use a positive kb or mb value`);
   }
 
+  if (env.SWAGGER_ENABLED !== undefined && !["true", "false"].includes(env.SWAGGER_ENABLED)) {
+    throw new Error("SWAGGER_ENABLED must be true or false");
+  }
+
   return {
     ...env,
     API_PREFIX: env.API_PREFIX ?? "api",

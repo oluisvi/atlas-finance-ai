@@ -34,3 +34,6 @@ JWT valida assinatura, issuer, audience, expiração, tipo, sessão persistida e
 Uploads de importação validam extensão, base64, tamanho, row count, conteúdo OFX perigoso, ownership e duplicidade, sem persistir arquivo bruto. Exports são gerados em memória com allowlists, limites, nomes controlados, formula-injection defense, no-store e nosniff. Segredos obrigatórios são validados no startup e nunca devem aparecer em logs.
 
 Operações financeiras críticas mantêm transações e concorrência/idempotência específicas do módulo. Auditoria é best-effort após o commit: falha de auditoria é logada sem expor metadata nem desfazer uma operação já confirmada. Limitações conhecidas: rate limit process-local, parser CSV V1 simples, load test apenas de sanidade e dois advisories moderados transitivos de ExcelJS sem caminho de uso vulnerável conhecido.
+# OpenAPI exposure
+
+Swagger UI and its JSON endpoint are enabled by default outside production and disabled by default in production through `SWAGGER_ENABLED`. The UI does not persist Bearer credentials, examples contain no secrets, and the generated schema is tested against internal hashes, fingerprints, connection settings, and secret names.

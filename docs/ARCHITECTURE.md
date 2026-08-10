@@ -1003,3 +1003,6 @@ O desenho preserva seguranca, auditabilidade e escalabilidade. O ponto central e
 O request pipeline efetivo é: CORS allowlist → request/correlation ID e no-store → limites de body → Helmet → throttling global/específico → JWT/session guard → ValidationPipe estrito → controller/service → filtro global sanitizado. Logs HTTP registram somente request ID, método, path, status e duração; bodies financeiros, tokens e secrets não são registrados.
 
 O Nest habilita shutdown hooks. `PrismaService` abre um pool PostgreSQL limitado no startup, conecta explicitamente, atende readiness com query mínima e encerra Prisma e pool no shutdown. Liveness permanece independente do banco.
+# API contract layer
+
+The HTTP edge includes a dedicated OpenAPI 3 contract layer in `apps/api/src/config/swagger.config.ts`. It derives paths from Nest runtime metadata and adds stable public schemas, security, errors, uploads, downloads, and deterministic operation IDs without coupling public models to Prisma entities. Swagger serving is environment-controlled and disabled in production by default.

@@ -20,6 +20,9 @@ export const appConfig = registerAs("app", () => ({
   jsonBodyLimit: process.env.JSON_BODY_LIMIT ?? "256kb",
   nodeEnv: (process.env.NODE_ENV ?? "development") as NodeEnvironment,
   port: Number.parseInt(process.env.API_PORT ?? "3000", 10),
+  swaggerEnabled: process.env.SWAGGER_ENABLED === undefined
+    ? (process.env.NODE_ENV ?? "development") !== "production"
+    : process.env.SWAGGER_ENABLED === "true",
   urlEncodedBodyLimit: process.env.URLENCODED_BODY_LIMIT ?? "64kb"
 }));
 
