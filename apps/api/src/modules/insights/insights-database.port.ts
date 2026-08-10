@@ -21,5 +21,5 @@ export interface InsightsTransactionClient {
 }
 
 export interface InsightsDatabasePort extends InsightsTransactionClient {
-  $transaction<T>(operation: (database: InsightsTransactionClient) => Promise<T>): Promise<T>;
+  $transaction<T>(operation: (database: InsightsTransactionClient) => Promise<T>, options?: { isolationLevel: "Serializable" }): Promise<T>;
 }

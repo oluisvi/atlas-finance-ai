@@ -13,7 +13,7 @@ export class InsightsDatabaseAdapter implements InsightsDatabasePort {
     this.insightGenerationRun = prisma.insightGenerationRun;
   }
 
-  $transaction<T>(operation: (database: InsightsTransactionClient) => Promise<T>): Promise<T> {
-    return this.prisma.$transaction((transaction: Prisma.TransactionClient) => operation(transaction));
+  $transaction<T>(operation: (database: InsightsTransactionClient) => Promise<T>, options?: { isolationLevel: "Serializable" }): Promise<T> {
+    return this.prisma.$transaction((transaction: Prisma.TransactionClient) => operation(transaction), options);
   }
 }

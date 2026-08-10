@@ -33,6 +33,7 @@ describe("InsightsService", () => {
     database.insightGenerationRun.create.mockResolvedValue(run());
     database.insightGenerationRun.update.mockResolvedValue(run({ status: RunStatus.COMPLETED, finishedAt: END }));
     database.financialInsight.findFirst.mockResolvedValue(null);
+    database.financialInsight.findMany.mockResolvedValue([]);
     database.financialInsight.create.mockImplementation(({ data }) => Promise.resolve(insight({ userId: data.userId, type: data.type, source: data.source, periodStart: START, periodEnd: END, title: data.title, body: data.body, severity: data.severity ?? FinancialInsightSeverity.INFO, status: data.status ?? FinancialInsightStatus.NEW, generatedByRunId: data.generatedByRunId ?? null })));
     database.financialInsight.update.mockResolvedValue(insight());
   });
@@ -47,9 +48,9 @@ describe("InsightsService", () => {
       const result = await service.generate(USER_ID, { startDate: START.toISOString(), endDate: END.toISOString(), currency: "BRL" });
       expect(database.financialInsight.create).toHaveBeenCalledWith({ data: expect.objectContaining({ userId: USER_ID, type: FinancialInsightType.CASHFLOW_SUMMARY, source: FinancialInsightSource.RULE_ENGINE, severity: FinancialInsightSeverity.INFO, status: FinancialInsightStatus.NEW, dataPoints: expect.objectContaining({ fingerprint: expect.stringMatching(/^[a-f0-9]{64}$/), currency: "BRL" }) }) });
       expect(database.insightGenerationRun.update).toHaveBeenCalledWith({ where: { id: RUN_ID }, data: expect.objectContaining({ status: RunStatus.COMPLETED, finishedAt: expect.any(Date), tokenInputCount: 0, tokenOutputCount: 0 }) });
-      expect(auditRecord).toHaveBeenCalledWith({ action: "insights.generate", actorUserId: USER_ID, userId: USER_ID, eventType: AuditEventType.INSIGHT_GENERATED, entityId: INSIGHT_ID, entityType: "financial_insight", metadata: { runId: RUN_ID, outcome: "created", trigger: InsightGenerationTrigger.MANUAL, currency: "BRL", periodStart: START.toISOString(), periodEnd: END.toISOString(), created: 1, updated: 0, skipped: 0 } });
+      expect(auditRecord).toHaveBeenCalledWith({ action: "insights.generate", actorUserId: USER_ID, userId: USER_ID, eventType: AuditEventType.INSIGHT_GENERATED, entityId: INSIGHT_ID, entityType: "financial_insight", metadata: { runId: RUN_ID, outcome: "created", trigger: InsightGenerationTrigger.MANUAL, currency: "BRL", periodStart: START.toISOString(), periodEnd: END.toISOString(), created: 1, updated: 0, skipped: 0, reactivated: 0 } });
       expect(result.insight?.dataPoints).toEqual({ code: "INSIGHTS_ENGINE_READY", currency: "BRL" });
-      expect(result.summary).toEqual({ created: 1, updated: 0, skipped: 0 });
+      expect(result.summary).toEqual({ created: 1, updated: 0, skipped: 0, resolved:0, reactivated:0 });
     });
 
     it("deduplicates an equivalent generation and preserves read/dismiss state", async () => {
@@ -113,6 +114,23 @@ describe("InsightsService", () => {
       expect(auditRecord).toHaveBeenCalledTimes(1);
     });
 
+    it("retries a serializable P2034 write conflict", async () => {
+      const conflict = new Prisma.PrismaClientKnownRequestError("write conflict", { code: "P2034", clientVersion: "test" });
+      database.financialInsight.findFirst.mockResolvedValue(insight({ title:"Financial insights are ready",body:"Your deterministic insight run completed.",dataPoints: { code: "INSIGHTS_ENGINE_READY", currency: "BRL", fingerprint: FINGERPRINT } }));
+      const transaction = jest.spyOn(database, "$transaction").mockRejectedValueOnce(conflict);
+      const result = await service.generate(USER_ID, { startDate: START.toISOString(), endDate: END.toISOString(), currency: "BRL" });
+      expect(result.summary.skipped).toBe(1);
+      expect(transaction).toHaveBeenLastCalledWith(expect.any(Function), { isolationLevel: "Serializable" });
+    });
+
+    it("retries adapter-level transaction write conflicts", async () => {
+      const conflict = Object.assign(new Error("TransactionWriteConflict"), { cause: { kind: "TransactionWriteConflict" } });
+      database.financialInsight.findFirst.mockResolvedValue(insight({ title:"Financial insights are ready",body:"Your deterministic insight run completed.",dataPoints: { code: "INSIGHTS_ENGINE_READY", currency: "BRL", fingerprint: FINGERPRINT } }));
+      const transaction = jest.spyOn(database, "$transaction").mockRejectedValueOnce(conflict);
+      await expect(service.generate(USER_ID, { startDate: START.toISOString(), endDate: END.toISOString(), currency: "BRL" })).resolves.toEqual(expect.objectContaining({ summary: expect.objectContaining({ skipped: 1 }) }));
+      expect(transaction).toHaveBeenCalledTimes(2);
+    });
+
     it("keeps two concurrent equivalent runs coherent and surfaces no P2002", async () => {
       let stored: FinancialInsight | null = null;
       database.insightGenerationRun.create.mockResolvedValueOnce(run()).mockResolvedValueOnce(run({ id: "00000000-0000-4000-8000-000000000005" }));
@@ -155,6 +173,11 @@ describe("InsightsService", () => {
       database.financialInsight.findMany.mockResolvedValue([]); database.financialInsight.count.mockResolvedValue(0);
       await service.list(USER_ID, plainToInstance(ListInsightsDto, { page: "1", pageSize: "5", sortBy: "periodStart", sortOrder: "asc" }));
       expect(database.financialInsight.findMany).toHaveBeenCalledWith(expect.objectContaining({ skip: 0, take: 5 }));
+    });
+
+    it("rejects an inverted listing date range", async () => {
+      await expect(service.list(USER_ID, { startDate: END.toISOString(), endDate: START.toISOString() })).rejects.toBeInstanceOf(BadRequestException);
+      expect(database.financialInsight.findMany).not.toHaveBeenCalled();
     });
 
     it.each([[0, 20], [1, 0], [1, 101], [1.5, 20]])("rejects invalid pagination page=%s size=%s", async (page, pageSize) => {
@@ -203,6 +226,12 @@ describe("InsightsService", () => {
       const result = sanitizeInsightMetadata({ text: "x".repeat(10_000), a: { b: { c: { d: { e: "too deep" } } } } });
       expect(JSON.stringify(result).length).toBeLessThanOrEqual(4_096); expect(result).toEqual(expect.objectContaining({ a: { b: { c: { d: {} } } } }));
     });
+
+    it("drops non-finite numbers, bigint, Date, Decimal and caps hostile arrays", () => {
+      const result = sanitizeInsightMetadata({ nan: Number.NaN, infinity: Number.POSITIVE_INFINITY, bigint: 1n, date: new Date(), decimal: new Prisma.Decimal("1.25"), safe: 12, values: Array.from({ length: 80 }, (_, index) => index) });
+      expect(result).toEqual({ safe: 12, values: Array.from({ length: 50 }, (_, index) => index) });
+      expect(() => JSON.stringify(result)).not.toThrow();
+    });
   });
 
   describe("detector pipeline",()=>{
@@ -210,7 +239,23 @@ describe("InsightsService", () => {
     const detector=(id:string,values:readonly DetectedInsight[])=>({id,supportedTypes:[FinancialInsightType.BUDGET_RISK] as const,detect:jest.fn<ReturnType<InsightDetector["detect"]>,Parameters<InsightDetector["detect"]>>().mockResolvedValue(values)});
     it("builds one shared context per currency and runs selected detectors",async()=>{const build=jest.fn().mockResolvedValue(detectionContext());const currencies=jest.fn().mockResolvedValue(["BRL"]);const selectedDetect=jest.fn<ReturnType<InsightDetector["detect"]>,Parameters<InsightDetector["detect"]>>().mockResolvedValue([detection()]);const ignoredDetect=jest.fn<ReturnType<InsightDetector["detect"]>,Parameters<InsightDetector["detect"]>>().mockResolvedValue([detection("BRL","IGNORED")]);service=new InsightsService(database,{record:auditRecord},{currencies,build},[{id:"BUDGET",supportedTypes:[FinancialInsightType.BUDGET_RISK],detect:selectedDetect},{id:"GOALS",supportedTypes:[FinancialInsightType.GOAL_PROJECTION],detect:ignoredDetect}]);await service.generate(USER_ID,{startDate:START.toISOString(),endDate:END.toISOString(),detectors:["BUDGET"]});expect(build).toHaveBeenCalledTimes(1);expect(selectedDetect).toHaveBeenCalledTimes(1);expect(ignoredDetect).not.toHaveBeenCalled()});
     it("processes currencies independently",async()=>{const build=jest.fn().mockImplementation((_userId:string,currency:string)=>Promise.resolve(detectionContext({currency})));const currencies=jest.fn().mockResolvedValue(["BRL","USD"]);const multiDetect:jest.MockedFunction<InsightDetector["detect"]>=jest.fn((value)=>Promise.resolve([detection(value.currency,value.currency)]));const multi:InsightDetector={id:"BUDGET",supportedTypes:[FinancialInsightType.BUDGET_RISK],detect:multiDetect};service=new InsightsService(database,{record:auditRecord},{currencies,build},[multi]);await service.generate(USER_ID,{startDate:START.toISOString(),endDate:END.toISOString()});expect(build).toHaveBeenCalledTimes(2);expect(database.financialInsight.create).toHaveBeenCalledTimes(2)});
-    it("completes an empty detector result without inventing an insight",async()=>{service=new InsightsService(database,{record:auditRecord},{currencies:jest.fn().mockResolvedValue(["BRL"]),build:jest.fn().mockResolvedValue(detectionContext())},[detector("BUDGET",[])]);const result=await service.generate(USER_ID,{startDate:START.toISOString(),endDate:END.toISOString()});expect(result.insight).toBeNull();expect(result.summary).toEqual({created:0,updated:0,skipped:0});expect(auditRecord).not.toHaveBeenCalled()});
+    it("completes an empty detector result without inventing an insight",async()=>{service=new InsightsService(database,{record:auditRecord},{currencies:jest.fn().mockResolvedValue(["BRL"]),build:jest.fn().mockResolvedValue(detectionContext())},[detector("BUDGET",[])]);const result=await service.generate(USER_ID,{startDate:START.toISOString(),endDate:END.toISOString()});expect(result.insight).toBeNull();expect(result.summary).toEqual({created:0,updated:0,skipped:0,resolved:0,reactivated:0});expect(auditRecord).not.toHaveBeenCalled()});
     it("fails the run atomically when a detector fails",async()=>{const broken:InsightDetector={id:"BUDGET",supportedTypes:[FinancialInsightType.BUDGET_RISK],detect:jest.fn().mockRejectedValue(new Error("detector failure"))};service=new InsightsService(database,{record:auditRecord},{currencies:jest.fn().mockResolvedValue(["BRL"]),build:jest.fn().mockResolvedValue(detectionContext())},[broken]);await expect(service.generate(USER_ID,{startDate:START.toISOString(),endDate:END.toISOString()})).rejects.toThrow("detector failure");expect(database.financialInsight.create).not.toHaveBeenCalled();expect(auditRecord).not.toHaveBeenCalled();expect(database.insightGenerationRun.update).toHaveBeenLastCalledWith({where:{id:RUN_ID},data:expect.objectContaining({status:RunStatus.FAILED})})});
+    it("archives an active condition absent from an executed detector scope",async()=>{const active=insight({status:FinancialInsightStatus.SEEN,dataPoints:{code:"BUDGET_EXCEEDED",currency:"BRL",fingerprint:"old"}});database.financialInsight.findMany.mockResolvedValue([active]);database.financialInsight.update.mockResolvedValue(insight({status:FinancialInsightStatus.ARCHIVED}));service=new InsightsService(database,{record:auditRecord},{currencies:jest.fn().mockResolvedValue(["BRL"]),build:jest.fn().mockResolvedValue(detectionContext())},[detector("BUDGET",[])]);const result=await service.generate(USER_ID,{startDate:START.toISOString(),endDate:END.toISOString()});expect(result.summary.resolved).toBe(1);expect(database.financialInsight.update).toHaveBeenCalledWith({where:{id:INSIGHT_ID},data:expect.objectContaining({status:FinancialInsightStatus.ARCHIVED,dataPoints:expect.objectContaining({lifecyclePreviousStatus:FinancialInsightStatus.SEEN,lifecycleResolvedAt:expect.any(String)})})})});
+    it("reactivates an archived condition and restores prior read state",async()=>{database.financialInsight.findFirst.mockResolvedValue(insight({status:FinancialInsightStatus.ARCHIVED,dataPoints:{code:"PIPELINE_TEST",currency:"BRL",fingerprint:"stored",lifecyclePreviousStatus:FinancialInsightStatus.SEEN}}));database.financialInsight.update.mockResolvedValue(insight({status:FinancialInsightStatus.SEEN}));service=new InsightsService(database,{record:auditRecord},{currencies:jest.fn().mockResolvedValue(["BRL"]),build:jest.fn().mockResolvedValue(detectionContext())},[detector("BUDGET",[detection()])]);const result=await service.generate(USER_ID,{startDate:START.toISOString(),endDate:END.toISOString()});expect(result.summary.reactivated).toBe(1);expect(database.financialInsight.update).toHaveBeenCalledWith({where:{id:INSIGHT_ID},data:expect.objectContaining({status:FinancialInsightStatus.SEEN})})});
+    it("reactivates an archived NEW condition as NEW and removes lifecycle metadata",async()=>{database.financialInsight.findFirst.mockResolvedValue(insight({status:FinancialInsightStatus.ARCHIVED,dataPoints:{code:"PIPELINE_TEST",currency:"BRL",fingerprint:"stored",lifecyclePreviousStatus:FinancialInsightStatus.NEW,lifecycleResolvedAt:"2026-01-01"}}));database.financialInsight.update.mockResolvedValue(insight({status:FinancialInsightStatus.NEW,dataPoints:{code:"PIPELINE_TEST",currency:"BRL",amount:"10.00"}}));service=new InsightsService(database,{record:auditRecord},{currencies:jest.fn().mockResolvedValue(["BRL"]),build:jest.fn().mockResolvedValue(detectionContext())},[detector("BUDGET",[detection()])]);const result=await service.generate(USER_ID,{startDate:START.toISOString(),endDate:END.toISOString()});expect(result.insights[0]?.status).toBe(FinancialInsightStatus.NEW);expect(result.insights[0]?.dataPoints).not.toHaveProperty("lifecycleResolvedAt")});
+    it("keeps a dismissed matching condition dismissed",async()=>{const fingerprint=insightFingerprint({userId:USER_ID,code:"PIPELINE_TEST",currency:"BRL",periodKey:"2026-07-01:2026-07-31",relatedEntityType:null,relatedEntityId:null});database.financialInsight.findFirst.mockResolvedValue(insight({type:FinancialInsightType.BUDGET_RISK,title:"Detected",body:"Detected safely.",severity:FinancialInsightSeverity.WARNING,status:FinancialInsightStatus.DISMISSED,dataPoints:{amount:"10.00",code:"PIPELINE_TEST",currency:"BRL",fingerprint}}));service=new InsightsService(database,{record:auditRecord},{currencies:jest.fn().mockResolvedValue(["BRL"]),build:jest.fn().mockResolvedValue(detectionContext())},[detector("BUDGET",[detection()])]);const result=await service.generate(USER_ID,{startDate:START.toISOString(),endDate:END.toISOString()});expect(result.insights[0]?.status).toBe(FinancialInsightStatus.DISMISSED);expect(database.financialInsight.update).not.toHaveBeenCalled()});
+    it("never treats dismissed as automatically resolved",async()=>{
+      service=new InsightsService(database,{record:auditRecord},{currencies:jest.fn().mockResolvedValue(["BRL"]),build:jest.fn().mockResolvedValue(detectionContext())},[detector("BUDGET",[])]);
+      await service.generate(USER_ID,{startDate:START.toISOString(),endDate:END.toISOString()});
+      expect(database.financialInsight.findMany).toHaveBeenCalledWith({where:expect.objectContaining({status:{in:[FinancialInsightStatus.NEW,FinancialInsightStatus.SEEN]}})});
+    });
+    it("scopes resolution by user currency period source and executed codes",async()=>{
+      service=new InsightsService(database,{record:auditRecord},{currencies:jest.fn().mockResolvedValue(["USD"]),build:jest.fn().mockResolvedValue(detectionContext({currency:"USD"}))},[detector("BUDGET",[])]);
+      await service.generate(USER_ID,{startDate:START.toISOString(),endDate:END.toISOString(),currency:"USD"});
+      expect(database.financialInsight.findMany).toHaveBeenCalledWith({where:expect.objectContaining({userId:USER_ID,source:FinancialInsightSource.RULE_ENGINE,periodStart:START,periodEnd:END,AND:expect.arrayContaining([{OR:[{dataPoints:{path:["currency"],equals:"USD"}}]}])})});
+    });
+    it("rolls back lifecycle resolution failure and does not audit",async()=>{database.financialInsight.findMany.mockResolvedValue([insight({dataPoints:{code:"BUDGET_EXCEEDED",currency:"BRL",fingerprint:"old"}})]);database.financialInsight.update.mockRejectedValueOnce(new Error("resolution failed")).mockResolvedValue(insight());service=new InsightsService(database,{record:auditRecord},{currencies:jest.fn().mockResolvedValue(["BRL"]),build:jest.fn().mockResolvedValue(detectionContext())},[detector("BUDGET",[])]);await expect(service.generate(USER_ID,{startDate:START.toISOString(),endDate:END.toISOString()})).rejects.toThrow("resolution failed");expect(auditRecord).not.toHaveBeenCalled();expect(database.insightGenerationRun.update).toHaveBeenLastCalledWith({where:{id:RUN_ID},data:expect.objectContaining({status:RunStatus.FAILED})})});
+    it("does not resolve unseen matches when detector output reaches the safety cap",async()=>{const values=Array.from({length:51},(_,index)=>detection("BRL",`BUDGET_${index}`));service=new InsightsService(database,{record:auditRecord},{currencies:jest.fn().mockResolvedValue(["BRL"]),build:jest.fn().mockResolvedValue(detectionContext())},[detector("BUDGET",values)]);await service.generate(USER_ID,{startDate:START.toISOString(),endDate:END.toISOString()});expect(database.financialInsight.create).toHaveBeenCalledTimes(50);expect(database.financialInsight.findMany).not.toHaveBeenCalled()});
   });
 });

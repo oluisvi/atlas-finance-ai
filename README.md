@@ -1236,7 +1236,7 @@ Os testes utilizam dados controlados e nunca registram:
 | Financial Health Score | Em desenvolvimento |
 | Importação CSV/OFX | Planejado |
 | Relatórios | Planejado |
-| Insights | Planejado |
+| Insights determinísticos | Concluído |
 | Serviço de IA | Planejado |
 | Notificações | Planejado |
 | Redis e workers | Planejado |
@@ -1338,14 +1338,11 @@ Criar:
 
 ## Insights financeiros
 
-Detectar:
+O InsightsModule V1 está concluído: foundation persistida, detectores core e avançados, deduplicação, read/dismiss e lifecycle transacional de resolução e reativação. Os 26 sinais atuais são determinísticos e isolados por usuário, moeda e período. Dados insuficientes retornam vazio, sem inferências artificiais.
 
-- aumento de gastos;
-- risco de orçamento;
-- recorrências desnecessárias;
-- queda no fluxo de caixa;
-- evolução de metas;
-- mudanças no score.
+A V1 cobre orçamento, fluxo de caixa, reserva de emergência, metas, Financial Health, patrimônio, categorias e recorrências. Feedback e comparações que exigem snapshots históricos permanecem fora da V1 porque o schema atual não oferece dados confiáveis para esses contratos. Explicações por IA ficam reservadas ao Atlas 2.0.
+
+Validação final: 11 suítes e 121 testes exclusivos de Insights; bateria global com 34 suítes e 269 testes.
 
 ## Serviço de IA
 

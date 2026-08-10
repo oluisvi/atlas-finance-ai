@@ -32,7 +32,8 @@ export function createInsightsDatabaseMock(initial?: Partial<InsightsDatabaseSta
     insightGenerationRun,
     state,
     transactionCalls,
-    $transaction: jest.fn(async <T>(operation: (client: InsightsTransactionClient) => Promise<T>): Promise<T> => {
+    $transaction: jest.fn(async <T>(operation: (client: InsightsTransactionClient) => Promise<T>, _options?: { isolationLevel: "Serializable" }): Promise<T> => {
+      void _options;
       transactionCalls.push(operation);
       return operation({ financialInsight, insightGenerationRun });
     })
