@@ -1,5 +1,17 @@
 # Atlas Finance AI - Architecture
 
+## Frontend V1 implementado
+
+```text
+Next.js App Router → Typed API Client → NestJS /api/v1 → Prisma → PostgreSQL
+```
+
+O aplicativo está em `apps/web`. `/api/docs-json` gera `src/lib/api/schema.d.ts` por `npm run api:generate`; o arquivo gerado não é editado manualmente. O transporte centraliza Bearer JWT, request ID, JSON, multipart, blobs, erros e refresh single-flight. Zustand mantém somente a sessão global; TanStack Query mantém estado do servidor e cache por domínio.
+
+Dinheiro permanece string decimal e `Intl.NumberFormat` é usado apenas para apresentação. Moedas ficam em buckets separados. Datas civis são formatadas diretamente de `YYYY-MM-DD`, sem conversão de fuso. O backend continua como fonte exclusiva de saldo, orçamento, progresso, score, relatórios e insights.
+
+O shell usa sidebar em desktop e drawer/navegação inferior em mobile. Tokens CSS semânticos definem canvas branco/cinza frio, navegação azul-marinho, destaque verde mineral, estados, raio de 10 px e sombra mínima. PWA, notificações, IA, Redis, scheduler, deploy e CI/CD não fazem parte da Fase 9.
+
 ## 1. Objetivo
 
 Este documento define a arquitetura backend do Atlas Finance AI com base no PRD, na modelagem de dados e no schema Prisma.

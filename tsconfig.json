@@ -22,5 +22,5 @@
     "types": ["node", "jest"]
   },
   "include": ["apps/**/*.ts", "scripts/**/*.mjs", "*.ts"],
-  "exclude": ["dist", "node_modules"]
+  "exclude": ["dist", "node_modules", "apps/web"]
 }

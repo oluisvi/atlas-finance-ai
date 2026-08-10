@@ -1524,4 +1524,18 @@ Backend Hardening and OpenAPI / Swagger are complete. The HTTP V1 contract is st
 
 Final validation: 37 test suites and 288 tests passing.
 
-Swagger UI is available at `/api/docs` and OpenAPI JSON at `/api/docs-json` when `SWAGGER_ENABLED=true`; production defaults to disabled. The next delivery phase is the frontend.
+Swagger UI is available at `/api/docs` and OpenAPI JSON at `/api/docs-json` when `SWAGGER_ENABLED=true`; production defaults to disabled.
+
+## Frontend web V1 — Fase 9
+
+O frontend V1 está implementado em `apps/web` com Next.js 16, React, TypeScript strict, App Router, Tailwind CSS, TanStack Query, Zustand, React Hook Form, Zod e Recharts. Inclui autenticação com refresh, dashboard multi-moeda, contas, transações, transferências, orçamentos, metas, recorrências, importações, relatórios/exportações, saúde financeira, insights e configurações.
+
+```bash
+npm run dev:web
+npm run api:generate
+npm run test:web
+npm run typecheck:web
+npm run build:web
+```
+
+Configure `NEXT_PUBLIC_API_URL` conforme `.env.example`. O frontend não soma moedas diferentes nem recalcula regras financeiras. PWA, notificações, IA, deploy e CI/CD permanecem para fases futuras.

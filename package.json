@@ -3,12 +3,16 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
-    "start:api": "npm run build && node dist/apps/api/src/main.js",
+    "build": "npm run build:api && npm run build:web",
+    "build:api": "tsc -p tsconfig.build.json",
+    "start:api": "npm run build:api && node dist/apps/api/src/main.js",
     "start:api:prod": "node dist/apps/api/src/main.js",
-    "typecheck": "tsc --noEmit -p tsconfig.json",
-    "lint": "eslint .",
-    "test": "jest --runInBand",
+    "typecheck": "npm run typecheck:api && npm run typecheck:web",
+    "typecheck:api": "tsc --noEmit -p tsconfig.json",
+    "lint": "npm run lint:api && npm --prefix apps/web run lint",
+    "lint:api": "eslint apps/api prisma.config.ts",
+    "test": "npm run test:api && npm run test:web",
+    "test:api": "jest --runInBand --testPathIgnorePatterns=apps/web",
     "prisma:validate": "prisma validate",
     "prisma:generate": "prisma generate",
     "prisma:migrate:deploy": "prisma migrate deploy",
@@ -16,6 +20,11 @@
     "db:verify-catalog": "node scripts/verify-supabase-catalog.mjs",
     "db:expected-catalog": "node scripts/expected-catalog-from-migration.mjs",
     "setup:env": "node scripts/setup-env.mjs"
+    ,"dev:web": "npm --prefix apps/web run dev"
+    ,"build:web": "npm --prefix apps/web run build"
+    ,"test:web": "npm --prefix apps/web run test"
+    ,"typecheck:web": "npm --prefix apps/web run typecheck"
+    ,"api:generate": "npm --prefix apps/web run api:generate"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
