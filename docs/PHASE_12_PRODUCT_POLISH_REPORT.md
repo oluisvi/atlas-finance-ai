@@ -69,3 +69,21 @@ Recharts permanece em import dinâmico e restrito ao Dashboard. Não houve depen
 Lighthouse foi executado contra `next start`, nunca `next dev`. Desktop/login: performance 100, acessibilidade 96, boas práticas 100, FCP 235 ms, LCP 652 ms, TBT 0 ms e CLS 0. Mobile/login (segunda execução): performance 95, acessibilidade 96, FCP 763 ms, LCP 2.636 ms, TBT 150 ms e CLS 0. O LCP mobile ficou 136 ms acima da meta de 2,5 s sob throttling; INP não foi medido por ausência de uma interação válida no Lighthouse e não foi inferido. A build autenticada foi validada visualmente, mas Lighthouse autenticado ficou fora do escopo técnico do runner sem persistir credenciais em artefatos.
 
 O web público existente respondeu `200` em `https://atlas-finance-web.onrender.com`. No fechamento, health, liveness e readiness da API pública `https://atlas-finance-api.onrender.com` responderam `503`; por isso o QA autenticado de produção e a inspeção de logs do Render permanecem bloqueados até a API recuperar e o PR ser mesclado. O auto-deploy configurado acompanha commits em `main`, então nenhum deploy manual foi disparado a partir da branch.
+
+## Fase 12.2 — Mobile Polish
+
+### Composição mobile e overflows
+
+A revisão encontrou três causas estruturais: a altura da bottom navigation não incorporava a safe area ao espaço reservado pelo conteúdo; o drawer permitia rolagem da página ao fundo; e dialogs longos usavam `90vh`, sem composição específica para teclado/viewport dinâmico nem ações aderentes. As causas foram corrigidas localmente, sem `overflow-x:hidden` global.
+
+Em até 900 px, o shell agora reserva `72px + env(safe-area-inset-bottom)`, o header considera a safe area superior e cada item da navegação mantém alvo mínimo de 44 px. O drawer ganhou overscroll contido, padding de safe area e bloqueio temporário do scroll do body enquanto aberto. Em até 760 px, dialogs viram bottom sheets limitados por `100dvh`, com rolagem interna e footer sticky; em 320 px, ações e labels encolhem sem sair da viewport. Tabelas analíticas continuam como a única rolagem horizontal deliberada, contida em `.table-wrap`.
+
+### Matriz e superfícies
+
+A composição foi revisada para 320×568, 360×800, 375×667, 390×844, 412×915, 430×932, 768×1024, 820×1180, 1024×768, 1280×800 e 1440×900, além do landscape 844×390. Page heads já empilham abaixo de 760 px; forms usam controles de 44 px, money usa `inputMode=decimal`, e e-mail usa `type=email`. Ledger, Accounts, Transfers, Budgets, Goals, Recurring, Financial Health, Insights, Reports, Imports e Settings preservam suas composições mobile específicas da Fase 12.1; progress bars e grids usam `minmax(0,1fr)`/largura fluida.
+
+### Performance e limitações reais
+
+O build de produção Next 16.3 compilou sem erros em 1,84 s na primeira validação e 15,3 s no ciclo completo. Não houve dependência, migration, schema ou RLS novo; Recharts segue em import dinâmico e o React Query Devtools permanece condicionado ao ambiente de desenvolvimento. A fonte Manrope é entregue como WOFF2 local com preload do Next e sem chamada externa.
+
+A tentativa final do Lighthouse foi feita contra `next start`. O runner local encontrou o Chrome isolado, mas não conseguiu obter o WebSocket de depuração; portanto nenhum score novo foi fabricado. A referência factual permanece: desktop 100/96/100, LCP 652 ms e CLS 0; mobile 95/96/100, LCP 2.636 s e CLS 0. INP continua não obtido. A meta residual é repetir a coleta em CI/ambiente com Chrome depurável e confirmar LCP ≤2,5 s.

@@ -57,6 +57,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       router.replace(`/login?next=${encodeURIComponent(path)}`);
     }
   }, [auth.status, path, router]);
+  useEffect(() => {
+    if (!open) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = previousOverflow; };
+  }, [open]);
 
   if (auth.status === "loading") {
     return <div className="app-loading" aria-busy="true" aria-label="Carregando sua área financeira"><div className="skeleton" /><div className="skeleton" /></div>;
@@ -92,7 +98,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <button onClick={() => setOpen(true)} aria-label="Abrir mais opções"><Menu /><span>Mais</span></button>
     </nav>
     <style jsx global>{`
-      .shell{min-height:100vh;display:grid;grid-template-columns:252px minmax(0,1fr)}
+      .shell{min-height:100dvh;display:grid;grid-template-columns:252px minmax(0,1fr)}
       .shell>aside,.mobile-drawer{background:var(--nav);color:#fff;padding:22px 14px;display:flex;flex-direction:column}
       .brand{height:46px;display:flex;align-items:center;gap:11px;padding:0 10px;font-size:17px;letter-spacing:-.02em}
       .atlas-mark{width:23px;height:28px;display:grid;place-items:center;transform:rotate(45deg);border-radius:5px;background:linear-gradient(135deg,#25b88b,#0b715c);position:relative;overflow:hidden}
@@ -106,11 +112,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       .app-context{display:flex;flex-direction:column}.app-context strong{font-size:14px}.app-context small{color:var(--muted);margin-top:2px;font-size:12px}.content{padding:30px clamp(22px,3vw,46px) 50px;max-width:1580px;margin:auto;outline:none}
       .menu,.mobile-drawer,.bottom,.drawer-scrim{display:none}.app-loading{padding:32px;display:grid;gap:16px}.app-loading .skeleton:first-child{height:130px}
       @media(max-width:900px){
-        .shell{display:block;padding-bottom:72px}.shell>aside{display:none}.app-header{height:62px;padding:0 15px}.menu{display:inline-grid;margin-right:8px}.content{padding:22px 16px 36px}
-        .drawer-scrim{display:block;position:fixed;inset:0;z-index:49;border:0;background:rgb(0 25 27/.54)}.mobile-drawer{display:flex;position:fixed;inset:0 18% 0 0;z-index:50;box-shadow:20px 0 50px rgb(0 21 24/.25);overflow:auto}.mobile-drawer .drawer-close{display:block}
-        .bottom{display:flex;position:fixed;z-index:40;bottom:0;left:0;right:0;height:72px;padding-bottom:env(safe-area-inset-bottom);background:rgb(255 255 255/.96);border-top:1px solid var(--border);justify-content:space-around}
-        .bottom a,.bottom button{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:3px;color:var(--muted);text-decoration:none;border:0;background:none;font-size:10px;min-width:0}.bottom a.active{color:var(--atlas);background:transparent}.bottom svg{width:19px;height:19px}.bottom span{font-size:10px;white-space:nowrap}
+        .shell{display:block;padding-bottom:calc(72px + env(safe-area-inset-bottom))}.shell>aside{display:none}.app-header{height:calc(62px + env(safe-area-inset-top));padding:env(safe-area-inset-top) 15px 0}.menu{display:inline-grid;margin-right:8px}.content{padding:22px 16px 36px}
+        .drawer-scrim{display:block;position:fixed;inset:0;z-index:49;border:0;background:rgb(0 25 27/.54)}.mobile-drawer{display:flex;position:fixed;inset:0 18% 0 0;z-index:50;padding-top:max(22px,env(safe-area-inset-top));padding-bottom:max(22px,env(safe-area-inset-bottom));box-shadow:20px 0 50px rgb(0 21 24/.25);overflow:auto;overscroll-behavior:contain}.mobile-drawer .drawer-close{display:block}
+        .bottom{display:flex;position:fixed;z-index:40;bottom:0;left:0;right:0;height:calc(72px + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);background:rgb(255 255 255/.96);border-top:1px solid var(--border);justify-content:space-around}
+        .bottom a,.bottom button{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:3px;color:var(--muted);text-decoration:none;border:0;background:none;font-size:10px;min-width:0;min-height:44px}.bottom a.active{color:var(--atlas);background:transparent}.bottom svg{width:19px;height:19px}.bottom span{max-width:100%;overflow:hidden;text-overflow:ellipsis;font-size:10px;white-space:nowrap}
       }
+      @media(max-width:340px){.bottom span{font-size:9px}.content{padding-inline:12px}.mobile-drawer{right:10%}}
     `}</style>
   </div>;
 }
