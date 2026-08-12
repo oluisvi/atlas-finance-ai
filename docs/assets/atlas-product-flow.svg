@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="250" viewBox="0 0 1200 250" role="img" aria-labelledby="title desc">
+  <title id="title">Fluxo de valor do Atlas</title><desc id="desc">Organizar, entender, planejar e agir</desc>
+  <defs>
+    <style>
+      .trail{stroke-dasharray:8 9;animation:move 10s linear infinite}.node{animation:rise 4s ease-in-out infinite}.n2{animation-delay:.5s}.n3{animation-delay:1s}.n4{animation-delay:1.5s}
+      @keyframes move{to{stroke-dashoffset:-136}}@keyframes rise{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+      @media(prefers-reduced-motion:reduce){.trail,.node{animation:none}}
+    </style>
+  </defs>
+  <rect width="1200" height="250" rx="20" fill="#f4f7f6"/>
+  <path class="trail" d="M165 98H1035" fill="none" stroke="#84b9a8" stroke-width="3"/>
+  <g font-family="Inter,Segoe UI,sans-serif" text-anchor="middle">
+    <g class="node" transform="translate(165 98)"><circle r="40" fill="#062d31"/><text y="7" fill="#fff" font-size="25">01</text><text y="75" fill="#10231f" font-size="20" font-weight="700">Organizar</text><text y="101" fill="#5d746e" font-size="14">contas e movimentos</text></g>
+    <g class="node n2" transform="translate(455 98)"><circle r="40" fill="#087a5b"/><text y="7" fill="#fff" font-size="25">02</text><text y="75" fill="#10231f" font-size="20" font-weight="700">Entender</text><text y="101" fill="#5d746e" font-size="14">posição e mudanças</text></g>
+    <g class="node n3" transform="translate(745 98)"><circle r="40" fill="#315f8c"/><text y="7" fill="#fff" font-size="25">03</text><text y="75" fill="#10231f" font-size="20" font-weight="700">Planejar</text><text y="101" fill="#5d746e" font-size="14">limites e objetivos</text></g>
+    <g class="node n4" transform="translate(1035 98)"><circle r="40" fill="#a96408"/><text y="7" fill="#fff" font-size="25">04</text><text y="75" fill="#10231f" font-size="20" font-weight="700">Agir</text><text y="101" fill="#5d746e" font-size="14">com contexto e clareza</text></g>
+  </g>
+</svg>
