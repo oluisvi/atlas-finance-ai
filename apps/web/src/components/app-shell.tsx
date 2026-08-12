@@ -99,7 +99,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       .atlas-mark span{width:1px;height:34px;background:#a4e4cf;opacity:.7;transform:rotate(-18deg)}
       .drawer-close{display:none;background:none;border:0;color:#fff;margin-left:auto;cursor:pointer}.drawer-close svg{width:20px}
       .shell nav section{margin-top:21px}.shell nav section>span{display:block;padding:0 10px 7px;color:#8eb1ae;font-size:10px;text-transform:uppercase;letter-spacing:.09em}
-      .shell nav a,.nav-footer button{display:flex;align-items:center;gap:11px;min-height:40px;padding:0 11px;color:#d8e7e4;text-decoration:none;border-radius:var(--radius-sm);font-size:13px;border:0;width:100%;background:transparent;cursor:pointer}
+      .shell nav a,.nav-footer a,.nav-footer button{display:flex;align-items:center;gap:11px;min-height:40px;padding:0 11px;color:#d8e7e4;text-decoration:none;border-radius:var(--radius-sm);font-size:13px;border:0;width:100%;background:transparent;cursor:pointer}
       .shell nav a svg,.nav-footer svg{width:17px;height:17px;stroke-width:1.8}.shell nav a:hover,.shell nav a.active,.nav-footer a.active{background:var(--nav-hover);color:#fff}
       .nav-footer{margin-top:auto;border-top:1px solid #255054;padding-top:12px}.logout{margin-top:3px}
       .shell main{min-width:0}.app-header{height:70px;padding:0 30px;background:rgb(255 255 255/.82);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);display:flex;align-items:center;position:sticky;top:0;z-index:20}
