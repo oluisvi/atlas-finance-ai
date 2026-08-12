@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="360" viewBox="0 0 1200 360" role="img" aria-labelledby="title desc">
+  <title id="title">Atlas Finance AI</title>
+  <desc id="desc">Clareza financeira do dado à decisão</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#041f24"/><stop offset="1" stop-color="#075449"/>
+    </linearGradient>
+    <linearGradient id="line" x1="0" y1="0" x2="1" y2="0">
+      <stop stop-color="#53d7aa" stop-opacity="0"/><stop offset=".48" stop-color="#53d7aa"/><stop offset="1" stop-color="#c8f4e3" stop-opacity=".08"/>
+    </linearGradient>
+    <filter id="glow"><feGaussianBlur stdDeviation="7" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <style>
+      .route{stroke-dasharray:10 12;animation:route 14s linear infinite}.pulse{animation:pulse 3.2s ease-in-out infinite;transform-origin:center}.drift{animation:drift 8s ease-in-out infinite alternate}
+      @keyframes route{to{stroke-dashoffset:-176}}@keyframes pulse{0%,100%{opacity:.38;transform:scale(.92)}50%{opacity:1;transform:scale(1.08)}}@keyframes drift{to{transform:translateX(18px)}}
+      @media(prefers-reduced-motion:reduce){.route,.pulse,.drift{animation:none}}
+    </style>
+  </defs>
+  <rect width="1200" height="360" rx="24" fill="url(#bg)"/>
+  <g opacity=".17" fill="none" stroke="#83cdb6">
+    <circle cx="1030" cy="-15" r="168"/><circle cx="1030" cy="-15" r="224"/><circle cx="1030" cy="-15" r="280"/>
+    <path d="M0 287H1200M0 319H1200M864 0V360M932 0V360M1000 0V360M1068 0V360"/>
+  </g>
+  <g transform="translate(70 62)">
+    <path d="M38 2 76 40 38 78 0 40Z" fill="#0a8b68"/>
+    <path d="M38 9v62M15 40h46" stroke="#b9f3df" stroke-width="2" opacity=".82"/>
+    <circle class="pulse" cx="38" cy="40" r="7" fill="#ecfff8" filter="url(#glow)"/>
+  </g>
+  <text x="170" y="96" fill="#f4fffb" font-family="Inter,Segoe UI,sans-serif" font-size="27" font-weight="700" letter-spacing="-.5">ATLAS FINANCE AI</text>
+  <text x="70" y="188" fill="#ffffff" font-family="Inter,Segoe UI,sans-serif" font-size="54" font-weight="650" letter-spacing="-2.2">Clareza financeira,</text>
+  <text x="70" y="246" fill="#a9e7d2" font-family="Inter,Segoe UI,sans-serif" font-size="54" font-weight="650" letter-spacing="-2.2">do dado à decisão.</text>
+  <text x="72" y="294" fill="#c8dcd6" font-family="Inter,Segoe UI,sans-serif" font-size="17">Finanças pessoais · planejamento · diagnóstico explicável · múltiplas moedas</text>
+  <g class="drift" fill="none" stroke="url(#line)" stroke-width="2">
+    <path class="route" d="M708 245C782 207 820 237 866 186s92-19 132-76 80-23 132-66"/>
+  </g>
+  <g fill="#74ddba">
+    <circle class="pulse" cx="708" cy="245" r="5"/><circle class="pulse" cx="866" cy="186" r="5" style="animation-delay:.7s"/><circle class="pulse" cx="998" cy="110" r="5" style="animation-delay:1.4s"/><circle class="pulse" cx="1130" cy="44" r="5" style="animation-delay:2.1s"/>
+  </g>
+</svg>

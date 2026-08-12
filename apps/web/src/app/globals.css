@@ -60,15 +60,19 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .btn.primary { background: var(--atlas); border-color: var(--atlas); color: #fff; }
 .btn.primary:hover { background: var(--atlas-hover); color: #fff; }
 .btn.secondary { background: var(--surface-secondary); border-color: transparent; }
+.btn.danger { background: var(--critical); border-color: var(--critical); color: #fff; }
+.btn.danger:hover { background: #952d2d; border-color: #952d2d; color: #fff; }
 .btn:disabled { cursor: not-allowed; opacity: .52; }
 .icon-button { width: 40px; height: 40px; display: inline-grid; place-items: center; border: 1px solid transparent; border-radius: var(--radius-sm); background: transparent; cursor: pointer; }
 .icon-button:hover { border-color: var(--border); background: var(--surface-secondary); }
+.icon-button.danger { color: var(--critical); }
 .icon-button svg, .btn svg { width: 17px; height: 17px; }
 
 .field { display: flex; flex-direction: column; gap: 7px; }
 .field label, label.field { font-size: 13px; font-weight: 680; color: var(--text-secondary); }
 .field input, .field select, .field textarea, select.btn { min-height: 44px; border: 1px solid var(--border-strong); border-radius: var(--radius-sm); padding: 10px 12px; background: var(--surface); color: var(--text); }
 .field small { color: var(--critical); }
+.field-hint { color: var(--muted); font-size: 12px; line-height: 1.45; font-weight: 450; }
 .muted { color: var(--muted); }
 .amount { font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; letter-spacing: -.02em; }
 
@@ -114,6 +118,9 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .dialog footer, .dialog .form-error { grid-column: 1 / -1; }
 .dialog footer { display: flex; justify-content: flex-end; gap: 10px; padding-top: 6px; }
 .form-error { color: var(--critical); }
+.confirm-dialog { width: min(470px, 100%); }
+.confirm-dialog > p { line-height: 1.6; margin: 18px 0 24px; }
+.confirm-dialog > footer { display: flex; justify-content: flex-end; gap: 10px; }
 
 @media (max-width: 760px) {
   .page { gap: 22px; }
