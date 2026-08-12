@@ -52,7 +52,7 @@ const reportLabels: Record<string, string> = { summary: "Resumo financeiro", "ca
 export function Reports() {
   const [type, setType] = useState("summary");
   const [format, setFormat] = useState("pdf");
-  const query = useQuery({ queryKey: ["reports", type], queryFn: () => api(`/reports/${type}`) });
+  const query = useQuery({ queryKey: ["reports", type], queryFn: () => api(`/reports/${type}`, { query: { currency: "BRL" } }) });
   const data = object(query.data);
   const entries = Object.entries(data).filter(([, value]) => ["string", "number"].includes(typeof value)).slice(0, 8);
 

@@ -60,6 +60,14 @@ O dashboard prioriza posição financeira, comportamento do período, sinais rel
 
 ![Dashboard desktop do Atlas Finance](docs/screenshots/dashboard-desktop.png)
 
+### Livro financeiro e inteligência explicável
+
+| Financial Ledger | Saúde financeira |
+| --- | --- |
+| ![Ledger de transações do Atlas Finance](docs/screenshots/transactions-desktop.png) | ![Saúde financeira do Atlas Finance](docs/screenshots/financial-health-desktop.png) |
+
+![Briefing de insights do Atlas Finance](docs/screenshots/insights-desktop.png)
+
 ### Mapa financeiro de contas
 
 Contas são organizadas por instituição, tipo, moeda, saldo e status. Formulários utilizam nomes humanos e exemplos; identificadores internos permanecem apenas no contrato entre frontend e API.

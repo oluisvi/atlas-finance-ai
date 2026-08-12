@@ -47,3 +47,25 @@ Foram usados dois conceitos visuais gerados especificamente para o Atlas (Financ
 ## Validação
 
 O QA cobre autenticação renderizada, estados de erro, typecheck, testes, lint, builds, Prisma, OpenAPI e revisão Git. O resultado factual final e limitações ambientais são registrados no handoff da tarefa.
+
+## Fase 12.1 — Release Validation
+
+### Visual QA e referências
+
+As treze rotas do produto foram verificadas no navegador real: Dashboard, Accounts, Transactions, Transfers, Budgets, Goals, Recurring, Financial Health, Insights, Reports, Imports, Settings, Login e Register. A revisão Nielsen encontrou e corrigiu três problemas concretos: uniformidade excessiva nas páginas de recurso, contrato incorreto do formulário de orçamento e overflow no viewport de 320 px.
+
+Origin UI orientou labels, fields e controles compactos; Skiper UI, motion discreto; Cult UI, disclosure progressivo; React Bits, feedback sem animação contínua; Uiverse, estados pequenos de controles; Refero Styles (Mercury/Linear/editorial analytics), densidade e hierarquia; Aceternity, progressão do upload. Nenhum source externo foi copiado e nenhuma dependência foi adicionada.
+
+`ResourcePage` continua responsável por query, mutations, filtros, dialogs, errors e empty states, mas delega apresentação a superfícies de domínio: Financial Ledger para transações, trajetória para metas, leitura planejado/gasto para orçamentos e compromissos futuros para recorrências. O formulário de orçamento agora envia `month` e `year` numéricos e apenas campos aceitos pela API.
+
+### Responsividade, acessibilidade e performance
+
+A matriz cobriu 1920×1080, 1440×900, 1280×800, 1024×768, 768×1024, 430×932, 390×844, 360×800 e 320×568. Em 320 px, a remoção do `min-width` rígido do `body` eliminou overflow horizontal sem esconder controles. Foco visível, landmarks, labels, headings, dialogs, mensagens de erro, navegação por teclado e `prefers-reduced-motion` foram preservados.
+
+Recharts permanece em import dinâmico e restrito ao Dashboard. Não houve dependency creep. Os screenshots atuais usam exclusivamente o dataset artificial `qa.phase12.1@atlas.local` e estão em `docs/screenshots/`.
+
+### Produção
+
+Lighthouse foi executado contra `next start`, nunca `next dev`. Desktop/login: performance 100, acessibilidade 96, boas práticas 100, FCP 235 ms, LCP 652 ms, TBT 0 ms e CLS 0. Mobile/login (segunda execução): performance 95, acessibilidade 96, FCP 763 ms, LCP 2.636 ms, TBT 150 ms e CLS 0. O LCP mobile ficou 136 ms acima da meta de 2,5 s sob throttling; INP não foi medido por ausência de uma interação válida no Lighthouse e não foi inferido. A build autenticada foi validada visualmente, mas Lighthouse autenticado ficou fora do escopo técnico do runner sem persistir credenciais em artefatos.
+
+O web público existente respondeu `200` em `https://atlas-finance-web.onrender.com`. No fechamento, health, liveness e readiness da API pública `https://atlas-finance-api.onrender.com` responderam `503`; por isso o QA autenticado de produção e a inspeção de logs do Render permanecem bloqueados até a API recuperar e o PR ser mesclado. O auto-deploy configurado acompanha commits em `main`, então nenhum deploy manual foi disparado a partir da branch.
