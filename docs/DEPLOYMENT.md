@@ -45,6 +45,17 @@ Nunca coloque segredos no Blueprint. `NEXT_PUBLIC_` é público e não deve cont
 
 Não use wildcard no CORS. No plano free, serviços dormem após inatividade e o primeiro acesso pode sofrer cold start; não há ping artificial.
 
+## Monitoramento externo com UptimeRobot
+
+Configure dois monitores HTTP(s), ambos com método `GET` e sem autenticação:
+
+| Monitor | URL | Intervalo recomendado | Finalidade |
+| --- | --- | --- | --- |
+| Liveness | `https://atlas-finance-api-we3t.onrender.com/api/v1/health/liveness` | 5 minutos | Confirma que a aplicação está viva, monitora a API e reduz a ocorrência de cold start no Render Free. |
+| Readiness | `https://atlas-finance-api-we3t.onrender.com/api/v1/health/readiness` | 15–30 minutos | Confirma que a API está pronta e consulta também o PostgreSQL no Supabase. |
+
+A URL base da API é `https://atlas-finance-api-we3t.onrender.com`. O liveness deve ser leve e não depende do banco; o readiness verifica API + banco e, por isso, deve usar um intervalo maior. No free tier, a frequência mínima e os recursos disponíveis dependem do plano do UptimeRobot, e o Render Free ainda pode suspender ou reiniciar o serviço conforme os limites da plataforma. O monitoramento reduz cold starts, mas não garante disponibilidade contínua. Não adicione API keys, tokens ou credenciais do UptimeRobot ao repositório.
+
 ## Smoke público
 
 Validar web, `/health`, `/health/liveness`, `/health/readiness`, register, login, `/auth/me`, refresh, dashboard, transações, imports, relatórios, insights, CORS e mobile/PWA. Não usar dados pessoais. O deploy não foi executado nesta fase porque o ambiente não possui sessão autenticada do Render.
