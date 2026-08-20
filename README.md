@@ -33,7 +33,13 @@ O produto foi construído em torno de quatro perguntas:
 3. **Como estou?** — orçamentos, metas, reserva e saúde financeira.
 4. **O que merece atenção?** — insights determinísticos, relatórios e próximos passos.
 
-![Fluxo do produto Atlas](docs/assets/atlas-product-flow.svg)
+<p align="center">
+  <img
+    src="docs/assets/atlas-product-flow.svg"
+    alt="Fluxo do produto Atlas: organizar, entender, planejar e agir"
+    width="100%"
+  />
+</p>
 
 ### Princípios do produto
 
@@ -95,7 +101,11 @@ No desktop, o Atlas privilegia tabelas, leitura comparativa e maior densidade de
 Em telas menores, a navegação e os componentes financeiros são reorganizados para preservar legibilidade e interação.
 
 <p align="center">
-  <img src="docs/screenshots/dashboard-mobile.png" alt="Dashboard mobile do Atlas Finance" width="390" />
+  <img
+    src="docs/screenshots/dashboard-mobile.png"
+    alt="Dashboard mobile do Atlas Finance"
+    width="390"
+  />
 </p>
 
 ---
@@ -345,6 +355,10 @@ https://atlas-finance-api-we3t.onrender.com/
 ### Health endpoints
 
 ```text
+Web
+GET /health
+
+API
 GET /api/v1/health/liveness
 GET /api/v1/health/readiness
 ```
