@@ -14,17 +14,19 @@
 [![Tests](https://img.shields.io/badge/testes-303%20aprovados-087A5B?style=flat-square)](#qualidade)
 [![PWA](https://img.shields.io/badge/PWA-segura-315F8C?style=flat-square&logo=pwa&logoColor=white)](docs/UX_PWA_DEPLOYMENT_IMPLEMENTATION_REPORT.md)
 
-[Produto](#o-produto) · [Experiência](#experiência-do-produto) · [Capacidades](#capacidades) · [Arquitetura](#arquitetura) · [Segurança](#segurança) · [Execução](#execução-local) · [Documentação](#documentação)
+**[Abrir aplicação](https://atlas-finance-web.onrender.com/) · [Documentação](docs/) · [Arquitetura](docs/ARCHITECTURE.md) · [Segurança](docs/SECURITY.md)**
 
 </div>
 
 ---
 
-## O produto
+## Sobre o Atlas
 
-O **Atlas Finance AI** é uma plataforma full-stack de finanças pessoais criada para transformar registros financeiros em entendimento e ação. O produto conecta contas, movimentações, planejamento, diagnósticos e relatórios em uma experiência única — sem sacrificar precisão, segurança ou explicabilidade.
+O **Atlas Finance AI** é uma plataforma full-stack de finanças pessoais criada para transformar registros financeiros em **entendimento, planejamento e ação**.
 
-O Atlas não é apenas um registrador de gastos. Ele responde, progressivamente, a quatro perguntas:
+Em vez de apenas registrar receitas e despesas, o Atlas conecta contas, movimentações, orçamentos, metas, diagnósticos e relatórios em uma única experiência.
+
+O produto foi construído em torno de quatro perguntas:
 
 1. **Onde está meu dinheiro?** — contas, saldos e patrimônio por moeda.
 2. **O que mudou?** — receitas, despesas, transferências e recorrências.
@@ -33,68 +35,72 @@ O Atlas não é apenas um registrador de gastos. Ele responde, progressivamente,
 
 ![Fluxo do produto Atlas](docs/assets/atlas-product-flow.svg)
 
-### Por que ele existe
-
-Aplicações financeiras frequentemente acumulam números sem produzir entendimento. O Atlas adota outra abordagem: cada área tem uma pergunta central, uma hierarquia própria e contexto suficiente para o usuário compreender o que vê.
-
-> **Familiaridade na interação. Identidade na composição. Confiabilidade nas regras.**
-
-### Princípios
+### Princípios do produto
 
 - **Confiabilidade antes de conveniência:** regras financeiras críticas vivem no backend.
 - **Explicabilidade antes de magia:** score e insights mostram sua base.
 - **Moeda é domínio:** BRL, USD e EUR nunca são somados implicitamente.
-- **Dados insuficientes não viram zero:** a interface comunica limites de análise.
+- **Dados insuficientes não viram zero:** ausência de informação não é apresentada como precisão.
 - **Segurança faz parte do produto:** autenticação, autorização e privacidade são estruturais.
-- **IA não é autoridade financeira:** a versão atual usa insights determinísticos e auditáveis.
+- **IA não é autoridade financeira:** a versão atual prioriza análises determinísticas e auditáveis.
+
+> **Familiaridade na interação. Identidade na composição. Confiabilidade nas regras.**
 
 ---
 
-## Experiência do produto
+## Produto em uso
 
-O design system **Atlas Mineral** combina clareza editorial, densidade de produto financeiro e uma identidade inspirada em orientação, trajetórias e camadas de informação. O resultado evita tanto o “dashboard administrativo genérico” quanto interfaces experimentais difíceis de usar.
+O design system **Atlas Mineral** combina clareza editorial, densidade de produto financeiro e uma identidade inspirada em orientação, trajetórias e camadas de informação.
+
+A interface foi projetada para evitar tanto o dashboard administrativo genérico quanto experiências excessivamente experimentais.
 
 ### Financial Briefing
 
-O dashboard prioriza posição financeira, comportamento do período, sinais relevantes e próxima ação. Cada moeda é analisada separadamente e a ausência de informação nunca é apresentada como falsa precisão.
+O dashboard concentra posição financeira, comportamento do período, sinais relevantes e próximas ações.
+
+Cada moeda é analisada separadamente e a ausência de dados nunca é apresentada como falsa precisão.
 
 ![Dashboard desktop do Atlas Finance](docs/screenshots/dashboard-desktop.png)
 
-### Livro financeiro e inteligência explicável
+### Financial Ledger
 
-| Financial Ledger | Saúde financeira |
-| --- | --- |
-| ![Ledger de transações do Atlas Finance](docs/screenshots/transactions-desktop.png) | ![Saúde financeira do Atlas Finance](docs/screenshots/financial-health-desktop.png) |
+As movimentações são organizadas para facilitar leitura por conta, categoria, período, status e valor.
+
+![Ledger de transações do Atlas Finance](docs/screenshots/transactions-desktop.png)
+
+### Saúde financeira explicável
+
+O Atlas apresenta score, qualidade dos dados, fatores e recomendações mantendo visível a base utilizada pelo diagnóstico.
+
+![Saúde financeira do Atlas Finance](docs/screenshots/financial-health-desktop.png)
+
+### Insights
+
+Sinais financeiros são detectados de forma determinística, classificados por severidade e apresentados com contexto.
 
 ![Briefing de insights do Atlas Finance](docs/screenshots/insights-desktop.png)
 
-### Mapa financeiro de contas
+### Contas
 
-Contas são organizadas por instituição, tipo, moeda, saldo e status. Formulários utilizam nomes humanos e exemplos; identificadores internos permanecem apenas no contrato entre frontend e API.
+Contas são organizadas por instituição, tipo, moeda, saldo e status.
+
+Identificadores internos permanecem no contrato entre frontend e API; a interface utiliza nomes e informações compreensíveis para o usuário.
 
 ![Tela de contas do Atlas Finance](docs/screenshots/accounts-desktop.png)
 
 ### Experiência responsiva
 
-No desktop, o Atlas privilegia tabelas, leitura comparativa e densidade. Em telas menores, a sidebar se transforma em navegação móvel e tabelas financeiras viram listas estruturadas, sem comprimir a versão desktop.
+No desktop, o Atlas privilegia tabelas, leitura comparativa e maior densidade de informação.
+
+Em telas menores, a navegação e os componentes financeiros são reorganizados para preservar legibilidade e interação.
 
 <p align="center">
   <img src="docs/screenshots/dashboard-mobile.png" alt="Dashboard mobile do Atlas Finance" width="390" />
 </p>
 
-### Linguagem de interface
-
-- labels persistentes, placeholders úteis e helper texts contextuais;
-- selects de entidade como `Nubank · Conta digital · BRL`, nunca UUIDs;
-- erros próximos ao campo e mensagens técnicas sanitizadas;
-- empty states educativos com próximo passo real;
-- diálogos acessíveis para ações destrutivas;
-- status comunicado por texto, ícone e cor;
-- `prefers-reduced-motion`, foco visível e touch targets adequados.
-
 ---
 
-## Capacidades
+## Principais capacidades
 
 | Domínio | O que o Atlas entrega |
 | --- | --- |
@@ -114,11 +120,15 @@ No desktop, o Atlas privilegia tabelas, leitura comparativa e densidade. Em tela
 | **Exportações** | Documentos CSV, XLSX e PDF gerados no backend |
 | **Operação** | Health, liveness, readiness, request ID e shutdown gracioso |
 
-### Regras financeiras preservadas
+---
 
-#### Dinheiro sem ponto flutuante
+## Regras financeiras
 
-Valores monetários trafegam como strings decimais e são persistidos em `DECIMAL(19,4)`. O frontend formata a apresentação, mas nunca se torna fonte de verdade para os cálculos.
+A lógica financeira crítica permanece no backend e segue invariantes explícitos para evitar inconsistências entre interface, API e banco de dados.
+
+### Dinheiro sem ponto flutuante
+
+Valores monetários trafegam como strings decimais e são persistidos utilizando `DECIMAL(19,4)`.
 
 ```json
 {
@@ -127,7 +137,9 @@ Valores monetários trafegam como strings decimais e são persistidos em `DECIMA
 }
 ```
 
-#### Múltiplas moedas sem soma implícita
+O frontend é responsável pela apresentação, mas nunca se torna fonte de verdade para cálculos financeiros.
+
+### Múltiplas moedas sem soma implícita
 
 ```json
 {
@@ -138,9 +150,13 @@ Valores monetários trafegam como strings decimais e são persistidos em `DECIMA
 }
 ```
 
-Não existe conversão cambial automática. Dashboard, relatórios, metas, budgets e score preservam o contexto da moeda selecionada.
+Não existe conversão cambial automática.
 
-#### Atualizações atômicas
+Dashboard, relatórios, metas, budgets e score preservam o contexto da moeda selecionada.
+
+### Atualizações atômicas
+
+Operações que afetam estado financeiro são executadas de forma transacional.
 
 ```mermaid
 flowchart LR
@@ -151,10 +167,10 @@ flowchart LR
     C -. falha .-> R[Rollback completo]
 ```
 
-#### Datas com significado
+### Datas com significado
 
-- datas civis usam `YYYY-MM-DD`;
-- instantes usam ISO 8601/UTC;
+- datas civis utilizam `YYYY-MM-DD`;
+- instantes utilizam ISO 8601/UTC;
 - o frontend não converte datas civis de forma que altere o dia;
 - recorrências respeitam o último dia válido de cada mês.
 
@@ -162,7 +178,7 @@ flowchart LR
 
 ## Arquitetura
 
-O Atlas é um monorepo TypeScript com frontend Next.js, API NestJS, PostgreSQL/Supabase e contrato OpenAPI compartilhado.
+O Atlas é estruturado como um **monorepo TypeScript**, separando interface, API, persistência e contratos.
 
 ```mermaid
 flowchart LR
@@ -183,10 +199,31 @@ flowchart LR
 | --- | --- |
 | **Next.js App Router** | Rotas, shell, composição responsiva, PWA e estados da interface |
 | **React + TanStack Query** | Interação, mutations, cache e deduplicação de requests |
-| **Typed OpenAPI client** | Transporte HTTP consistente e tipos gerados pelo contrato |
+| **Typed OpenAPI Client** | Transporte HTTP consistente e tipos gerados pelo contrato |
 | **NestJS** | Autenticação, autorização, validação e regras de negócio |
 | **Prisma** | Acesso tipado, transações e precisão decimal |
-| **PostgreSQL/Supabase** | Fonte de verdade, integridade relacional e persistência |
+| **PostgreSQL / Supabase** | Fonte de verdade, integridade relacional e persistência |
+
+### Fluxo de uma requisição
+
+```mermaid
+sequenceDiagram
+    participant UI as Interface
+    participant Client as OpenAPI Client
+    participant API as NestJS API
+    participant Domain as Serviço de domínio
+    participant DB as PostgreSQL
+
+    UI->>Client: ação do usuário
+    Client->>API: JWT + X-Request-Id
+    API->>API: CORS, rate limit, guard e DTO
+    API->>Domain: comando validado
+    Domain->>DB: transação Prisma
+    DB-->>Domain: estado persistido
+    Domain-->>API: resposta estruturada
+    API-->>UI: JSON tipado
+    UI->>UI: cache, feedback e render
+```
 
 ### Estrutura do repositório
 
@@ -206,25 +243,21 @@ atlas-finance-ai/
 └── package.json              # Orquestração do monorepo
 ```
 
-### Fluxo de uma requisição
+---
 
-```mermaid
-sequenceDiagram
-    participant UI as Interface
-    participant Client as OpenAPI Client
-    participant API as NestJS API
-    participant Domain as Serviço de domínio
-    participant DB as PostgreSQL
-    UI->>Client: ação do usuário
-    Client->>API: JWT + X-Request-Id
-    API->>API: CORS, rate limit, guard e DTO
-    API->>Domain: comando validado
-    Domain->>DB: transação Prisma
-    DB-->>Domain: estado persistido
-    Domain-->>API: resposta estruturada
-    API-->>UI: JSON tipado
-    UI->>UI: cache, feedback e render
-```
+## Stack
+
+| Área | Tecnologias |
+| --- | --- |
+| **Frontend** | Next.js 16, React, TypeScript, Tailwind CSS |
+| **Estado e dados** | TanStack Query, Zustand, React Hook Form, Zod |
+| **Interface** | Radix UI, Lucide, Recharts, Sonner |
+| **Backend** | NestJS 11, class-validator, JWT, Argon2 |
+| **Banco de dados** | PostgreSQL/Supabase, Prisma 7, `Decimal(19,4)` |
+| **Contrato** | OpenAPI 3, Swagger, openapi-typescript |
+| **Arquivos** | CSV, ExcelJS/XLSX, PDFKit |
+| **Qualidade** | Jest, Vitest, Testing Library, ESLint, TypeScript strict |
+| **Deploy** | Render |
 
 ---
 
@@ -232,34 +265,95 @@ sequenceDiagram
 
 O modelo de segurança assume que toda entrada é não confiável e que dados financeiros pertencem exclusivamente ao usuário autenticado.
 
+Entre os controles implementados estão:
+
 - JWT de curta duração e refresh token rotativo;
 - hash de senha com Argon2;
 - guards de autenticação e autorização por recurso;
 - proteção contra IDOR em serviços e queries;
 - DTOs com whitelist e rejeição de campos extras;
-- rate limiting, Helmet, CORS explícito e limites de payload;
-- request IDs e erros sanitizados, sem stack ou Prisma errors na UI;
-- secrets apenas em variáveis de ambiente;
-- PWA sem cachear respostas financeiras autenticadas;
+- rate limiting;
+- Helmet;
+- CORS explícito;
+- limites de payload;
+- request IDs;
+- erros sanitizados;
+- secrets somente em variáveis de ambiente;
+- PWA sem cache de respostas financeiras autenticadas;
 - auditoria de operações financeiras relevantes.
 
-Leia o modelo completo em [docs/SECURITY.md](docs/SECURITY.md).
+O modelo completo está documentado em [`docs/SECURITY.md`](docs/SECURITY.md).
 
 ---
 
-## Stack
+## Qualidade
 
-| Área | Tecnologias |
+A V1 possui uma suíte automatizada cobrindo API e frontend.
+
+| Aplicação | Suítes | Testes | Resultado |
+| --- | ---: | ---: | :---: |
+| API NestJS | 37 | 288 | ✅ |
+| Web Next.js | 5 | 15 | ✅ |
+| **Total** | **42** | **303** | **✅** |
+
+A validação integral inclui:
+
+```bash
+npm run prisma:validate
+npm run prisma:generate
+npm run api:generate
+npm run typecheck
+npm run test
+npm run lint
+npm run build
+git diff --check
+```
+
+Além dos testes automatizados, o frontend é validado em browser quanto a:
+
+- conteúdo significativo;
+- overlays do framework;
+- console;
+- interação;
+- responsividade;
+- estados vazios;
+- estados de erro.
+
+Relatórios de implementação e auditoria estão disponíveis em [`docs/`](docs/).
+
+---
+
+## Deploy
+
+A aplicação é executada no **Render** utilizando dois serviços independentes:
+
+| Serviço | Responsabilidade |
 | --- | --- |
-| Frontend | Next.js 16, React, TypeScript, Tailwind CSS |
-| Estado e dados | TanStack Query, Zustand, React Hook Form, Zod |
-| Interface | Radix UI, Lucide, Recharts, Sonner |
-| Backend | NestJS 11, class-validator, JWT, Argon2 |
-| Banco | PostgreSQL/Supabase, Prisma 7, `Decimal(19,4)` |
-| Contrato | OpenAPI 3, Swagger, openapi-typescript |
-| Arquivos | CSV, ExcelJS/XLSX, PDFKit |
-| Qualidade | Jest, Vitest, Testing Library, ESLint, TypeScript strict |
-| Deploy | Render, serviços web independentes para API e frontend |
+| `atlas-finance-api` | API NestJS, Prisma e acesso ao PostgreSQL |
+| `atlas-finance-web` | Aplicação Next.js de produção |
+
+### Produção
+
+**Frontend**
+
+https://atlas-finance-web.onrender.com/
+
+**API**
+
+https://atlas-finance-api-we3t.onrender.com/
+
+### Health endpoints
+
+```text
+GET /api/v1/health/liveness
+GET /api/v1/health/readiness
+```
+
+O `render.yaml` mantém a infraestrutura de deploy versionada, incluindo builds independentes e configuração dos serviços.
+
+Secrets e credenciais não são armazenados no manifesto e permanecem configurados diretamente no ambiente de produção.
+
+Para detalhes operacionais, consulte [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md).
 
 ---
 
@@ -270,18 +364,19 @@ Leia o modelo completo em [docs/SECURITY.md](docs/SECURITY.md).
 - Node.js `>=22 <23`;
 - npm;
 - PostgreSQL compatível ou projeto Supabase;
-- variáveis de ambiente baseadas em [.env.example](.env.example).
+- variáveis de ambiente baseadas em `.env.example`.
 
-### 1. Instalar
+### 1. Clonar e instalar
 
 ```bash
 git clone https://github.com/oluisvi/atlas-finance-ai.git
 cd atlas-finance-ai
+
 npm install
 npm --prefix apps/web install
 ```
 
-### 2. Configurar o ambiente
+### 2. Configurar ambiente
 
 ```bash
 npm run setup:env
@@ -292,9 +387,12 @@ Preencha as variáveis obrigatórias sem versionar arquivos `.env`:
 ```dotenv
 DATABASE_URL="postgresql://..."
 DIRECT_URL="postgresql://..."
+
 JWT_ACCESS_SECRET="..."
 JWT_REFRESH_SECRET="..."
+
 CORS_ORIGIN="http://localhost:3001"
+
 NEXT_PUBLIC_API_URL="http://localhost:3000/api/v1"
 ```
 
@@ -309,14 +407,28 @@ npm run api:generate
 
 ### 4. Executar
 
-Em terminais separados:
+API:
 
 ```bash
-# API — http://localhost:3000/api/v1
 npm run start:api
+```
 
-# Web — http://localhost:3001
+Disponível em:
+
+```text
+http://localhost:3000/api/v1
+```
+
+Frontend:
+
+```bash
 npm run dev:web
+```
+
+Disponível em:
+
+```text
+http://localhost:3001
 ```
 
 ### Scripts principais
@@ -336,45 +448,9 @@ npm run dev:web
 
 ---
 
-## Qualidade
-
-Última bateria integral executada na Fase 12:
-
-| Aplicação | Suítes | Testes | Resultado |
-| --- | ---: | ---: | :---: |
-| API NestJS | 37 | 288 | ✅ |
-| Web Next.js | 5 | 15 | ✅ |
-| **Total** | **42** | **303** | **✅** |
-
-```bash
-npm run prisma:validate   # passou
-npm run prisma:generate   # passou
-npm run api:generate      # passou
-npm run typecheck         # passou
-npm run test              # 303 testes aprovados
-npm run lint              # passou
-npm run build             # API + Next.js passaram
-git diff --check           # passou
-```
-
-Além da automação, o frontend é validado em browser quanto a conteúdo significativo, overlays do framework, console, interação, responsividade e estados de erro. O relatório da fase mais recente está em [docs/PHASE_12_PRODUCT_POLISH_REPORT.md](docs/PHASE_12_PRODUCT_POLISH_REPORT.md).
-
----
-
-## Deploy
-
-O [render.yaml](render.yaml) define dois serviços independentes:
-
-| Serviço | Responsabilidade |
-| --- | --- |
-| `atlas-finance-api` | API NestJS, Prisma e health checks |
-| `atlas-finance-web` | Aplicação Next.js de produção |
-
-O deploy usa build filters, Node 22, health check em `/api/v1/health/readiness` e variáveis sensíveis configuradas diretamente no Render. Nenhum secret é armazenado no manifesto.
-
----
-
 ## Documentação
+
+A documentação técnica e de produto permanece versionada junto ao código.
 
 | Documento | Conteúdo |
 | --- | --- |
@@ -384,63 +460,92 @@ O deploy usa build filters, Node 22, health check em `/api/v1/health/readiness` 
 | [Banco de dados](docs/DATABASE.md) | Modelo, integridade e persistência |
 | [Segurança](docs/SECURITY.md) | Threat model, controles e operação segura |
 | [Design System](docs/DESIGN_SYSTEM.md) | Tokens, componentes e linguagem Atlas Mineral |
-| [Diretrizes de UX](docs/UX_GUIDELINES.md) | Nielsen, formulários, estados e responsividade |
-| [Fase 12](docs/PHASE_12_PRODUCT_POLISH_REPORT.md) | Auditoria e polimento de produto |
+| [Diretrizes de UX](docs/UX_GUIDELINES.md) | Formulários, estados, acessibilidade e responsividade |
 | [Deployment](docs/DEPLOYMENT.md) | Ambientes, Render e checklist operacional |
 | [Roadmap](docs/ROADMAP.md) | Evolução planejada do produto |
 
-Os demais relatórios em [`docs/`](docs/) registram decisões, invariantes, endpoints, testes e limitações de cada domínio.
+Os demais relatórios em [`docs/`](docs/) registram decisões, invariantes, endpoints, testes, auditorias e limitações de cada domínio.
 
 ---
 
-## Estado do produto
+## Estado atual
 
 | Área | Estado |
 | --- | :---: |
-| Backend, banco e autenticação | ✅ Concluído |
-| Domínios financeiros principais | ✅ Concluído |
-| Dashboard, score e insights | ✅ Concluído |
-| Imports, relatórios e exportações | ✅ Concluído |
-| OpenAPI e cliente tipado | ✅ Concluído |
-| Frontend responsivo Atlas Mineral | ✅ Concluído |
-| PWA segura | ✅ Concluído |
-| Polimento de produto — Fase 12 | ✅ Concluído |
-| E2E contínuo multi-browser | 🔜 Próxima evolução |
-| Observabilidade e CI/CD completos | 🔜 Próxima evolução |
-| IA generativa e integrações avançadas | 🔭 Futuro |
+| Backend, banco e autenticação | ✅ |
+| Domínios financeiros principais | ✅ |
+| Dashboard | ✅ |
+| Financial Health Score | ✅ |
+| Insights determinísticos | ✅ |
+| Imports CSV / OFX / QFX | ✅ |
+| Relatórios e exportações | ✅ |
+| OpenAPI e cliente tipado | ✅ |
+| Frontend responsivo Atlas Mineral | ✅ |
+| PWA segura | ✅ |
+| Deploy full-stack | ✅ |
+| E2E contínuo multi-browser | 🔜 |
+| Observabilidade e CI/CD completos | 🔜 |
+| IA generativa | 🔭 |
+| Integrações financeiras avançadas | 🔭 |
 
-### O que o Atlas não faz hoje
+### Limites atuais
 
-- não movimenta dinheiro ou conecta contas via Open Finance;
-- não executa investimentos ou conversão cambial;
+O Atlas atualmente:
+
+- não movimenta dinheiro;
+- não conecta contas via Open Finance;
+- não executa investimentos;
+- não realiza conversão cambial automática;
 - não oferece recomendações financeiras geradas por IA;
 - não depende de Redis, filas ou workers para a V1 funcionar;
 - não promete operação financeira completa offline.
 
-Essas fronteiras são deliberadas: a versão atual prioriza uma base financeira correta, segura e explicável.
+Essas fronteiras são deliberadas.
+
+A versão atual prioriza uma base financeira **correta, segura, previsível e explicável** antes da introdução de automações e inteligência generativa.
 
 ---
 
 ## Roadmap
 
 ```mermaid
-timeline
-    title Evolução do Atlas Finance AI
-    Fases 1–3 : Fundação NestJS e PostgreSQL
-               : Autenticação e contas
-    Fases 4–6 : Transações e transferências
-               : Budgets, metas e dashboard
-    Fases 7–8 : Hardening e OpenAPI
-               : Reports, imports e insights
-    Fases 9–10 : Next.js V1 e PWA
-                : UX e acessibilidade
-    Fases 11–12 : Deploy e product polish
-                 : Atlas Mineral refinado
-    Próximas     : E2E contínuo e observabilidade
-                 : CI/CD e integrações
-    Atlas 2.0    : IA com dados minimizados
-                 : Explicações avançadas
+flowchart LR
+    A[Foundation] --> B[Core Finance]
+    B --> C[Planning]
+    C --> D[Analytics & Insights]
+    D --> E[Web Experience]
+    E --> F[Production V1]
+    F --> G[V1.x Quality]
+    G --> H[Atlas 2.0]
+
+    H --> I[IA generativa]
+    H --> J[Integrações avançadas]
+    H --> K[Observabilidade]
 ```
+
+### Foundation
+Backend, PostgreSQL, autenticação, autorização e invariantes financeiros.
+
+### Core Finance
+Contas, categorias, transações, transferências e recorrências.
+
+### Planning
+Budgets, metas e reserva de emergência.
+
+### Analytics & Insights
+Dashboard, Financial Health Score, insights, relatórios e importações.
+
+### Web Experience
+Next.js, Atlas Mineral, responsividade, acessibilidade e PWA.
+
+### Production V1
+Deploy full-stack, health endpoints, segurança operacional e ambiente de produção.
+
+### V1.x Quality
+E2E contínuo, observabilidade, CI/CD e refinamentos de produto.
+
+### Atlas 2.0
+IA generativa com dados minimizados, explicações avançadas e novas integrações.
 
 ---
 
@@ -450,9 +555,13 @@ Desenvolvido por **Luis Henrique Vieira**.
 
 [![GitHub](https://img.shields.io/badge/GitHub-oluisvi-181717?style=for-the-badge&logo=github)](https://github.com/oluisvi)
 
+---
+
 ## Licença
 
-Este projeto ainda não possui licença pública definida. Até que uma licença seja adicionada, todos os direitos permanecem reservados ao autor.
+Este projeto ainda não possui licença pública definida.
+
+Até que uma licença seja adicionada, todos os direitos permanecem reservados ao autor.
 
 ---
 
@@ -461,5 +570,7 @@ Este projeto ainda não possui licença pública definida. Até que uma licença
 ### Atlas Finance AI
 
 **Reliable financial rules. Clear indicators. Better decisions.**
+
+[Aplicação](https://atlas-finance-web.onrender.com/) · [Documentação](docs/) · [GitHub](https://github.com/oluisvi)
 
 </div>
